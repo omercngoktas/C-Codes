@@ -1,0 +1,2 @@
+This code written on Ubuntu system. That's why, end of txt lines finish with \n, but windows txt files finish with \r\n.
+This is because, there is lots of bugs if you try to run on Windows system.
