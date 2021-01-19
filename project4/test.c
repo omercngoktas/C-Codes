@@ -16,12 +16,13 @@ struct Student *addStudent(struct Student *root, char *name)
         root->name_next = NULL;
         return root;
     }
-    if(root->name_next == NULL &&)
+    if(root->name_next != NULL && )
 }
 
 int main()
 {
     struct Student *currentStudent;
+    printf("Deneme");
 
     return 0;    
 }

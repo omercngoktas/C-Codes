@@ -57,6 +57,7 @@ int main()
     long int ID;
     
     fgets(studentLine, SIZE, students);
+    printf("%s", studentLine);
     
     while(studentLine[i] != 32)
     {
@@ -76,7 +77,7 @@ int main()
         i++; j++;
     }   ID = atoi(id);
     
-
+    printf("%s %s %ld\n", name, surname, ID);
 
 
 
