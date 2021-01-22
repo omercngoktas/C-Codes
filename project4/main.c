@@ -116,20 +116,83 @@ struct Student *sortSurname(struct Student *root, char currentName[SIZE/3], char
     return root;
 }
 
-struct Student *deleteNode(struct Student *root, long int searchID) // PROJECT FUNCTION.
+struct Student *deleteNode(struct Student *root, long int searchID, int operator) // PROJECT FUNCTION.
 {
-    if(root == NULL)
-    {
-        printf("There is no student to delete.");
-    }
+    struct Student *temp;
     struct Student *iter = root;
-    while(iter->ID_next != NULL && iter->ID_next->ID != searchID)
+    switch (operator)
     {
-        iter = iter->ID_next;
-    }
-    printf("The student '%s %s\t\t%d' is deleted from the list!\n", iter->ID_next->name, iter->ID_next->surname, iter->ID_next->ID);
-    iter->ID_next = iter->ID_next->ID_next;
-    return iter;
+        case 1:
+            if(root->ID == searchID)
+            {
+                temp = root;
+                root = root->name_next;
+                free(temp);
+                return root;
+            }
+            while(iter->name_next != NULL && iter->name_next->ID != searchID)
+            {
+                iter = iter->name_next;
+            }
+            if(iter->name_next == NULL)
+            {
+                printf("There is no student matches*/*/*/ with ID %ld.\n", searchID);
+            }
+            temp = iter->name_next;
+            iter->name_next = iter->name_next->name_next;
+            free(temp);
+            return root;
+            break;
+        
+        case 2:
+            if(root->ID == searchID)
+            {
+                temp = root;
+                root = root->surname_next;
+                free(temp);
+                return root;
+            }
+            while(iter->surname_next != NULL && iter->surname_next->ID != searchID)
+            {
+                iter = iter->surname_next;
+            }
+            if(iter->surname_next == NULL)
+            {
+                printf("There is no student matches with ID %ld.\n", searchID);
+            }
+            temp = iter->surname_next;
+            iter->surname_next = iter->surname_next->surname_next;
+            free(temp);
+            return root;
+            break;
+        
+        case 3:
+            if(root->ID == searchID)
+            {
+                temp = root;
+                root = root->ID_next;
+                free(temp);
+                return root;
+            }
+            while(iter->ID_next != NULL && iter->ID_next->ID != searchID)
+            {
+                iter = iter->ID_next;
+            }
+            if(iter->ID_next == NULL)
+            {
+                printf("There is no student matches with ID %ld.\n", searchID);
+            }
+            printf("The student '%s %s\t\t%ld' is deleted from the list!\n", iter->ID_next->name, iter->ID_next->surname, iter->ID_next->ID);
+            temp = iter->ID_next;
+            iter->ID_next = iter->ID_next->ID_next;
+            free(temp);
+            
+            return root;
+            break;
+        
+        default:
+            break;
+    } 
 }
 
 void printList(struct Student *root, int process) // PROJECT FUNCTION.
@@ -173,6 +236,27 @@ void printList(struct Student *root, int process) // PROJECT FUNCTION.
     }
 }
 
+void writeToFile(struct Student *root, char fileName[],int operator)
+{
+
+    FILE *outputStudents = fopen(outputFile, "w");
+    switch (operator)
+    {
+        case 1:
+            fprintf(outputStudents, "")
+        
+            break;
+        
+        case 2:
+            break;
+
+        case 3:
+            break;
+        default:
+            break;
+    }
+}
+
 int main()
 {
     struct Student *studentID; // creating var from struct Student.
@@ -185,6 +269,7 @@ int main()
     int choice;
     char name[SIZE/3], surname[SIZE/3];
     long int ID;
+    char outputFile[SIZE];
 
     FILE *students = fopen("students.txt", "r"); // opening txt file with name of 'students'.
     if (students == NULL) // checking if text file exists.
@@ -221,9 +306,9 @@ int main()
     studentSurname = sortSurname(studentSurname, "Selin", "Ergul", 24566);
     studentSurname = sortSurname(studentSurname, "Emre", "Kiraz", 17895);
 
-    printList(studentName, 2);
+    /*printList(studentName, 2);
     printList(studentSurname, 3);
-    printList(studentID, 1);
+    printList(studentID, 1);*/
     while(1)
     {
         printf("Enter your choice:\n");
@@ -251,7 +336,9 @@ int main()
         case 2:
             printf("Enter a student ID:\n");
             scanf("%ld", &ID);
-            studentID = deleteNode(studentID, ID);
+            studentName = deleteNode(studentName, ID, 1);
+            studentSurname = deleteNode(studentSurname, ID, 2);
+            studentID = deleteNode(studentID, ID, 3);
             break;
 
         case 3:
@@ -261,9 +348,16 @@ int main()
             break;
 
         case 4:
+            printf("Enter a file name:\n");
+            scanf("%s", outputFile);
+            printf("Output is printed to the file %s\n\n", outputFile);
+            fprintf("")
             break;
 
         case 5:
+            printf("--------------------------------\n");
+            fclose(students);
+            return 0;
             break;
 
         default:
