@@ -1,63 +1,67 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-struct Student
-{
-    char *name;
-    char *surname;
-    long int ID;
-    struct Student *name_next;
-    struct Student *surname_next;
-    struct Student *ID_next;
-};
-
-struct Student *addStudent(struct Student *root, char *name)
-{
-    if(root == NULL)
-    {
-        root = (struct Student *) malloc(sizeof(struct Student));
-        root->name = name;
-        root->name_next = NULL;
-        return root;
-    }
-    if(strcmp(root->name, name) > 0)
-    {
-        struct Student *temp = (struct Student *) malloc(sizeof(struct Student));
-        temp->name = name;
-        temp->name_next = root;
-        return temp;
-    }
-    if(strcmp(root->surname, name) > 0)
-    {
-        struct Student *temp = (struct Student *) malloc(sizeof(struct Student));
-        temp->surname = name;
-        name
-    }
-
-}
-
-void displayStudent(struct Student *root)
-{
-    int i = 0;
-    printf("deneme\n");
-    while(root != NULL)
-    {
-        i++;
-        printf("%d. %s\n", i, root->name);
-        root = root->name_next;
-    }
-}
+#define SIZE 60
 
 int main()
 {
-    struct Student *currentStudent;
-    currentStudent = NULL;
+    FILE *students = fopen("students.txt", "r"); // opening txt file with name of 'students'.
+    if (students == NULL) // checking if text file exists.
+    {
+        printf("File students.txt could not open. Please make sure that it is on same direction with .exe file.");
+        return 0;
+    }
 
-    currentStudent = addStudent(currentStudent, "Omercan");
-    currentStudent = addStudent(currentStudent, "Goktas");
+    char student_name[SIZE/3], student_surname[SIZE/3], student_id[SIZE/3];
+    char hole_line[SIZE];
+    int i, j;
 
-    displayStudent(currentStudent);
+
+    while(!feof(students))
+    {
+        i = 0; j = 0;
+        fgets(hole_line, SIZE, students);
+        /*while(hole_line[i] != 32)
+        {
+            student_name[j] = hole_line[i];
+            i++;
+        } i++; j = 0;
+        while(hole_line[i] != '\t')
+        {
+            student_surname[j] = hole_line[i];
+            i++;
+        } i++; j = 0;
+        while(hole_line[i] != '\n')
+        {
+            student_id[j] = hole_line[i];
+            i++;
+        }
+        printf("%s ", student_id);*/
+        
+        while(hole_line[i] != 32)
+        {
+            printf("%c ", hole_line[i]);
+            student_name[i] = hole_line[i];
+            printf("%c ", student_name[i]);
+            i++;
+        } i++;
+        printf("  *******  ");
+        while(hole_line[i] != '\t')
+        {
+            printf("%c ", hole_line[i]);
+            student_surname[j] = hole_line[i];
+            i++;
+        }printf("\t\t"); i++; j = 0;
+        while(hole_line[i] != '\n')
+        {
+            printf("%c ", hole_line[i]);
+            student_id[j] = hole_line[i];
+            i++;
+        } printf("\n");
+
+        //printf("%s", hole_line);
+    }
+    
 
     return 0;    
 }

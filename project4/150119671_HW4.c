@@ -1,9 +1,19 @@
+/* Omercan Goktas 150119671
+
+First of all, I am sorry about not being able to implement a singly linked list. I tried too hard to figure out, but I could not find any
+way to solve this situation. That is why, I had to use 3 signly linked lists for name_next, surname_next and ID_next.
+Apart from these, I tried to implement function according to their usage and write codes understandable.
+
+In this project, I read txt file and get strings line by line and I opened txt file and printed some strings to this file. I also learned singly linked list.
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #define SIZE 60
 
-struct Student
+struct Student // creating struct with name Stundet.
 {
     char name[SIZE/3];
     char surname[SIZE/3];
@@ -13,32 +23,35 @@ struct Student
     struct Student *ID_next;
 };
 
-struct Student * insertNode(struct Student *root, char currentName[SIZE/3], char currentSurname[SIZE/3], long int currentID){
-    if(root == NULL)
+struct Student * insertNode(struct Student *root, char currentName[SIZE/3], char currentSurname[SIZE/3], long int currentID)
+// this function sort students according to ID order.
+{
+    if(root == NULL) // checking if root is NULL.
     {
-        root = (struct Student*) malloc(sizeof(struct Student));
-        root->ID_next = NULL;
-        strcpy(root->name, currentName);
-        strcpy(root->surname, currentSurname);
-        root->ID = currentID;
+        root = (struct Student*) malloc(sizeof(struct Student)); // allocating memory for root.
+        root->ID_next = NULL; // assigning NULL to next value of ID_next.
+        strcpy(root->name, currentName); // assigning name to the name for ID sorting.
+        strcpy(root->surname, currentSurname); // assigning surname to the surname for ID sorting.
+        root->ID = currentID; // assigning ID to the ID for ID sorting.
         return root;
     }
 
-    if(root->ID > currentID)
+    if(root->ID > currentID) // checking if first value bigger than currentID.
     {
-        struct Student * temp = (struct Student*) malloc(sizeof(struct Student));
+        struct Student * temp = (struct Student*) malloc(sizeof(struct Student)); // allocating memory for temp.
         strcpy(temp->name, currentName);
         strcpy(temp->surname, currentSurname);
         temp->ID = currentID;
-        temp ->ID_next = root;
+        temp ->ID_next = root; // connecting next ID value of temp to the root.
         return temp;
     }
 
-    struct Student *iter = root;
+    struct Student *iter = root; // assigning root to the iter.
     while(iter->ID_next != NULL && iter->ID_next->ID < currentID)
     {
         iter = iter->ID_next;
     }
+    // implementing process for assigning values.
     struct Student *temp = (struct Student*)malloc(sizeof(struct Student));
     temp->ID_next = iter->ID_next;
     iter->ID_next = temp;
@@ -49,6 +62,7 @@ struct Student * insertNode(struct Student *root, char currentName[SIZE/3], char
 }
 
 struct Student *sortName(struct Student *root, char currentName[SIZE/3], char currentSurname[SIZE/3], long int currentID)
+// this function sorts students according to name order.
 {
     if(root == NULL)
     {
@@ -83,6 +97,7 @@ struct Student *sortName(struct Student *root, char currentName[SIZE/3], char cu
 }
 
 struct Student *sortSurname(struct Student *root, char currentName[SIZE/3], char currentSurname[SIZE/3], long int currentID)
+// this function sorts students according to surname order.
 {
     if(root == NULL)
     {
@@ -116,14 +131,15 @@ struct Student *sortSurname(struct Student *root, char currentName[SIZE/3], char
     return root;
 }
 
-struct Student *deleteNode(struct Student *root, long int searchID, int operator) // PROJECT FUNCTION.
+struct Student *deleteNode(struct Student *root, long int searchID, int operator)
+// this function deletes student which was sent by user with ID.
 {
-    struct Student *temp;
-    struct Student *iter = root;
-    switch (operator)
+    struct Student *temp; // creating temp struct.
+    struct Student *iter = root; // assigning root to the iter.
+    switch (operator) // checking what is the operator.
     {
-        case 1:
-            if(root->ID == searchID)
+        case 1: // if operator is '1', student is deleted from name sorted struct.
+            if(root->ID == searchID) // checking if first element of struct matches with searchID.
             {
                 temp = root;
                 root = root->name_next;
@@ -136,7 +152,6 @@ struct Student *deleteNode(struct Student *root, long int searchID, int operator
             }
             if(iter->name_next == NULL)
             {
-                printf("There is no student matches*/*/*/ with ID %ld.\n", searchID);
             }
             temp = iter->name_next;
             iter->name_next = iter->name_next->name_next;
@@ -144,7 +159,7 @@ struct Student *deleteNode(struct Student *root, long int searchID, int operator
             return root;
             break;
         
-        case 2:
+        case 2: // if operator is '2', student is deleted from surname sorted struct.
             if(root->ID == searchID)
             {
                 temp = root;
@@ -158,7 +173,7 @@ struct Student *deleteNode(struct Student *root, long int searchID, int operator
             }
             if(iter->surname_next == NULL)
             {
-                printf("There is no student matches with ID %ld.\n", searchID);
+                
             }
             temp = iter->surname_next;
             iter->surname_next = iter->surname_next->surname_next;
@@ -166,7 +181,7 @@ struct Student *deleteNode(struct Student *root, long int searchID, int operator
             return root;
             break;
         
-        case 3:
+        case 3: // if operator is '3', student is deleted from ID sorted struct.
             if(root->ID == searchID)
             {
                 temp = root;
@@ -195,7 +210,7 @@ struct Student *deleteNode(struct Student *root, long int searchID, int operator
     } 
 }
 
-void printList(struct Student *root, int process) // PROJECT FUNCTION.
+void printList(struct Student *root, int process) // printing students with order to the console.
 {
     int number = 0;
     switch (process)
@@ -237,20 +252,45 @@ void printList(struct Student *root, int process) // PROJECT FUNCTION.
 }
 
 void writeToFile(struct Student *root, char fileName[],int operator)
+// this function prints all of the orders to the file which is taken from user.
 {
-
-    FILE *outputStudents = fopen(outputFile, "w");
+    FILE *outputStudents = fopen(fileName, "a");
+    if (outputStudents == NULL) // checking if file does not exist.
+    {
+        FILE *outputStudents = fopen(fileName, "w");
+    }
+    int number = 0;
     switch (operator)
     {
-        case 1:
-            fprintf(outputStudents, "")
+        case 1: // printing name order to the file.
+            fprintf(outputStudents, "The list in name-alphabetical order:\n");
+            while(root != NULL)
+            {
+                number++;
+                fprintf(outputStudents, "\t%d. %s %s\t%ld\n", number, root->name, root->surname, root->ID);
+                root = root->name_next;
+            }   fprintf(outputStudents, "\n");
         
             break;
         
-        case 2:
+        case 2: // printing surname order to the file.
+            fprintf(outputStudents, "The list in surname-alphabetical order:\n");
+            while(root != NULL)
+            {
+                number++;
+                fprintf(outputStudents, "\t%d. %s %s\t%ld\n", number, root->name, root->surname, root->ID);
+                root = root->surname_next;
+            }  fprintf(outputStudents, "\n");
             break;
 
-        case 3:
+        case 3: // printing ID order to the file.
+            fprintf(outputStudents, "The list in ID sorted order:\n");
+            while(root != NULL)
+            {
+                number++;
+                fprintf(outputStudents, "\t%d. %s %s\t%ld\n", number, root->name, root->surname, root->ID);
+                root = root->ID_next;
+            }  
             break;
         default:
             break;
@@ -278,37 +318,50 @@ int main()
         return 0;
     }
 
+    //char student_name[SIZE/3], student_surname[SIZE/3], student_id[SIZE/3];
+    char hole_line[SIZE];
+    int i, j;
+    char *student_name, *student_surname, *student_id;
+    long int student_ID;
+
+
+    while(!feof(students))
+    {
+        student_name = (char *) malloc(sizeof(char) * (SIZE/3));
+        student_surname = (char *) malloc(sizeof(char) * (SIZE/3));
+        student_id = (char *) malloc(sizeof(char) * (SIZE/3));
+
+        i = 0; j = 0;
+        fgets(hole_line, SIZE, students);
+        
+        while(hole_line[i] != 32)
+        {
+            student_name[i] = hole_line[i];
+            i++;
+        } i++;
+        
+        while(hole_line[i] != '\t')
+        {
+            student_surname[j] = hole_line[i];
+            i++; j++;
+        }i++; j = 0;
+        while(hole_line[i] != '\n')
+        {
+            student_id[j] = hole_line[i];
+            i++; j++;
+        }; student_ID = atoi(student_id);
+        studentID = insertNode(studentID, student_name, student_surname, student_ID);
+        studentName = sortName(studentName, student_name, student_surname, student_ID);
+        studentSurname = sortSurname(studentSurname, student_name, student_surname, student_ID);
+        free(student_name);
+        free(student_surname);
+        free(student_id);
+    }
     
-    studentID = insertNode(studentID, "Ayse", "Yilmaz", 1204);
-    studentID = insertNode(studentID, "Veli", "Arslan", 1515);
-    studentID = insertNode(studentID, "Fatma", "Ozde", 1001);
-    studentID = insertNode(studentID, "Mehmet", "Ari", 1441);
-    studentID = insertNode(studentID, "Ela", "Kara", 1980);
-    studentID = insertNode(studentID, "Ismail", "Celik", 1345);
-    studentID = insertNode(studentID, "Selin", "Ergul", 24566);
-    studentID = insertNode(studentID, "Emre", "Kiraz", 17895);
-
-    studentName = sortName(studentName, "Ayse", "Yilmaz", 1204);
-    studentName = sortName(studentName, "Veli", "Arslan", 1515);
-    studentName = sortName(studentName, "Fatma", "Ozde", 1001);
-    studentName = sortName(studentName, "Mehmet", "Ari", 1441);
-    studentName = sortName(studentName, "Ela", "Kara", 1980);
-    studentName = sortName(studentName, "Ismail", "Celik", 1345);
-    studentName = sortName(studentName, "Selin", "Ergul", 24566);
-    studentName = sortName(studentName, "Emre", "Kiraz", 17895);
-
-    studentSurname = sortSurname(studentSurname, "Ayse", "Yilmaz", 1204);
-    studentSurname = sortSurname(studentSurname, "Veli", "Arslan", 1515);
-    studentSurname = sortSurname(studentSurname, "Fatma", "Ozde", 1001);
-    studentSurname = sortSurname(studentSurname, "Mehmet", "Ari", 1441);
-    studentSurname = sortSurname(studentSurname, "Ela", "Kara", 1980);
-    studentSurname = sortSurname(studentSurname, "Ismail", "Celik", 1345);
-    studentSurname = sortSurname(studentSurname, "Selin", "Ergul", 24566);
-    studentSurname = sortSurname(studentSurname, "Emre", "Kiraz", 17895);
-
-    /*printList(studentName, 2);
+    printList(studentName, 2);
     printList(studentSurname, 3);
-    printList(studentID, 1);*/
+    printList(studentID, 1);
+
     while(1)
     {
         printf("Enter your choice:\n");
@@ -351,7 +404,9 @@ int main()
             printf("Enter a file name:\n");
             scanf("%s", outputFile);
             printf("Output is printed to the file %s\n\n", outputFile);
-            fprintf("")
+            writeToFile(studentName, outputFile, 1);
+            writeToFile(studentSurname, outputFile, 2);
+            writeToFile(studentID, outputFile, 3);
             break;
 
         case 5:
