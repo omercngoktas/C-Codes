@@ -12,9 +12,6 @@ struct customer
     struct basket *basketList;
     struct customer *next;
 };
-typedef struct customer customer;
-typedef customer customerPtr;
-customerPtr *customerNode = NULL;
 
 struct product
 {
@@ -24,9 +21,6 @@ struct product
     char category[SIZE];
     struct product *next;
 };
-typedef struct product product;
-typedef product productPtr;
-productPtr *productNode = NULL;
 
 struct basket
 {
@@ -36,8 +30,82 @@ struct basket
     struct basket *next;
 };
 
+typedef struct customer customer;
+typedef customer customerPtr;
+customerPtr *customerNode = NULL;
+
+typedef struct product product;
+typedef product productPtr;
+productPtr *productNode = NULL;
+
 void linkCustomers(int id, char name[], char surname[]);
 void linkProducts(int id, char name[], char category[], int price);
+void linkBaskets(int customerID, int basketID, int productID);
+
+void basketText()
+{
+    char customerID, basketID, productID;
+    FILE *basketText = fopen("basket.txt", "r");
+    if(basketText == NULL)
+    {
+        printf("basket.txt doesn't exist. Check the file.\n");
+        return;
+    }
+    while(!feof(basketText))
+    {
+        fscanf(basketText, "%d %d %d", &customerID, &basketID, &productID);
+        if(feof(basketText))
+        {
+            break;
+        }
+        linkBaskets(customerID, basketID, productID);
+    }
+    
+}
+
+int returnPrice(int productID)
+{
+    productPtr *iter = productNode;
+    while(iter->id != productID)
+    {
+        if(iter->next == NULL)
+        {
+            //printf("Please check the product ID.\n");
+            return -1;
+        }
+        iter = iter->next;
+    }
+    return iter->price;
+}
+
+void linkBaskets(int customerID, int basketID, int productID)
+{
+    customerPtr *iter = customerNode;
+    while(iter->id != customerID)
+    {
+        if(iter->next == NULL)
+        {
+            printf("Please check the customer ID.\n");
+            return;
+        }
+        iter = iter->next;
+    }
+    if(iter->basketList == NULL)
+    {
+        iter->basketList = (struct basket *) malloc(sizeof(struct basket));
+        iter->basketList->next = NULL;
+        iter->basketList->id = basketID;
+        iter->basketList->amount = 0;
+        //if(returnPrice())
+
+    }
+    iter->basketList = (struct basket *) malloc(sizeof(struct basket));
+    iter->basketList->id = basketID;
+    iter->basketList->amount = 0;
+    iter->basketList->next = NULL;
+    printf("amount: %d\n", iter->basketList->amount);
+
+}
 
 void customerText()
 {
@@ -236,14 +304,62 @@ void removeCustomer()
     }
 }
 
+void case2()
+{
+    int currentUserID;
+    char choice;
+    printf("2.a. List customers\n2.b. Select one of the customers\n");
+    printf("2.c. List the products\n2.d. Add a product\n2.e. Complete shopping\n");
+    printf("What is your choice? (Ex: a or b): ");
+    scanf(" %c", &choice);
+    switch (choice)
+    {
+    case 'a':
+        displayCustomers();
+        case2();
+        break;
+
+    case 'b':
+        printf("Enter the ID of customer: ");
+        scanf("%d", &currentUserID);
+        customerPtr *iter = customerNode;
+        while(iter->id != currentUserID)
+        {
+            iter = iter->next;
+            if(iter == NULL)
+            {
+                printf("There is no customer that matches with ID that you chose.\n");
+                return;
+            }
+        }
+        printf("%d %s %s\n", iter->id, iter->name, iter->surname);
+        case2();
+        break;
+
+    case 'c':
+        displayProducts();
+        case2();
+        break;
+
+    case 'd':
+        break;
+
+    case 'e':
+        break;
+
+    default:
+        break;
+    }
+}
+
 int main()
 {
-    int choice;
+    int choice, choice2, currentUserID;
     customerText();
     productText();
     while(true)
     {
-        printf("1- Add a customer\n2- Display Customers\n3- Remove customer\n4- Exit\n");
+        printf("1- Add a customer\n2- Add basket\n3- Remove customer\n4- Exit\n");
         printf("What is your choice?: ");
         scanf("%d", &choice);
         switch (choice)
@@ -254,7 +370,7 @@ int main()
             displayCustomers();
             break;
         case 2:
-            displayCustomers();
+            case2();
             break;
         case 3:
             displayCustomers();
@@ -262,6 +378,8 @@ int main()
             displayCustomers();
             break;
         case 4:
+            //linkBaskets(1, 15,15);
+            printf("%d \n", returnPrice(28));
             return 0;
             break;
         default:
