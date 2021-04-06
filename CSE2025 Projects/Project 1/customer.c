@@ -38,20 +38,23 @@ typedef struct product product;
 typedef product productPtr;
 productPtr *productNode = NULL;
 
+typedef struct basket basket;
+typedef basket basketPtr;
+
 void linkCustomers(int id, char name[], char surname[]);
 void linkProducts(int id, char name[], char category[], int price);
 void linkBaskets(int customerID, int basketID, int productID);
 int returnPrice(int productID);
 void addProductToBasket(int customerID, int productID);
-void addNewBasket(int customerID);
+int addNewBasket(int customerID);
 
 void basketText()
 {
-    char customerID, basketID, productID;
+    int customerID, productID, basketID;
     FILE *basketText = fopen("basket.txt", "r");
     if(basketText == NULL)
     {
-        printf("basket.txt doesn't exist. Check the file.\n");
+        printf("dosya bulunamadi.\n");
         return;
     }
     while(!feof(basketText))
@@ -62,117 +65,84 @@ void basketText()
             break;
         }
         linkBaskets(customerID, basketID, productID);
+        //printf("%d %d %d\n", customerID, basketID, productID);
     }
-    
-}
-
-int returnPrice(int productID)
-{
-    productPtr *iter = productNode;
-    while(iter->id != productID)
-    {
-        if(iter->next == NULL)
-        {
-            //printf("Please check the product ID.\n");
-            return -1;
-        }
-        iter = iter->next;
-    }
-    return iter->price;
 }
 
 void linkBaskets(int customerID, int basketID, int productID)
 {
     customerPtr *iter = customerNode;
-    while(iter->id != customerID) // checking if customer id in linked list.
+    int productPrice = returnPrice(productID);
+
+    while(iter != NULL && iter->id != customerID)
     {
-        if(iter == NULL)
-        {
-            printf("Please check the customer ID.\n");
-            return;
-        }
         iter = iter->next;
     }
-    if(returnPrice(productID) == -1) // checking product id if it exists.
+
+    if(iter == NULL)
     {
-        printf("Please check the product ID.\n");
+        printf("Please check the customer ID.\n");
         return;
     }
-
-    if(iter->basketList == NULL) // checking if current customer has never created a basket list.
+    
+    if(iter->basketList == NULL)
     {
-        iter->basketList = (struct basket *) malloc(sizeof(struct basket));
-        iter->basketList->next = NULL;
+        iter->basketList = (basketPtr *) malloc(sizeof(basketPtr));
         iter->basketList->id = basketID;
+        iter->basketList->productList = (productPtr *) malloc(sizeof(productPtr));
+        iter->basketList->productList->id = productID;
         iter->basketList->amount = 0;
-        iter->basketList->productList = (struct product *) malloc(sizeof(struct product));
+        iter->basketList->amount += productPrice;
         iter->basketList->productList->next = NULL;
-        iter->basketList->productList->id = productID;
-        iter->basketList->amount += returnPrice(productID);
-        return;
+        iter->basketList->next = NULL;
+        printf("productID: %d added to %s.\n", productID, iter->name);
+        return;         
     }
 
-    if(iter->basketList->id == basketID) // checking if basketID equals to customer's first basket.
-    {
-        if(iter->basketList->productList == NULL)
-        {
-            iter->basketList->productList = (struct product *) malloc(sizeof(struct product));
-            iter->basketList->productList->next = NULL;
-            iter->basketList->productList = iter->basketList->productList->next;
-            iter->basketList->productList->id = productID;
-            iter->basketList->amount += returnPrice(productID);
-            return;
-        }
-        while(iter->basketList->productList->next != NULL)
-        {
-            iter->basketList->productList = iter->basketList->productList->next;
-        }
-        iter->basketList->productList->next = NULL;
-        iter->basketList->productList = iter->basketList->productList->next;
-        iter->basketList->productList->id = productID;
-        iter->basketList->amount += returnPrice(productID);
-        return;
-    }
-
-    while(iter->basketList->next != NULL || iter->basketList->next->id < basketID)
+    while(iter->basketList->next != NULL && iter->basketList->next->id <= basketID)
     {
         iter->basketList = iter->basketList->next;
     }
 
     if(iter->basketList->next == NULL)
     {
-        iter->basketList->next = (struct basket *) malloc(sizeof(struct basket));
+        iter->basketList->next = (basketPtr *) malloc(sizeof(basketPtr));
+        iter->basketList->next->next = NULL;
         iter->basketList = iter->basketList->next;
-        iter->basketList->next = NULL;
+        iter->basketList->id = basketID;
         iter->basketList->amount = 0;
-        iter->basketList->productList = (struct product *) malloc(sizeof(struct product));
+        iter->basketList->amount += productPrice;
+        iter->basketList->productList = (productPtr *) malloc(sizeof(productPtr));
         iter->basketList->productList->next = NULL;
         iter->basketList->productList->id = productID;
-        iter->basketList->amount += returnPrice(productID);
+        printf("productID: %d added to %s.\n", productID, iter->name);
         return;
     }
 
     if(iter->basketList->next->id == basketID)
     {
         iter->basketList = iter->basketList->next;
+
         if(iter->basketList->productList == NULL)
         {
-            iter->basketList->productList = (struct product *) malloc(sizeof(struct basket));
+            iter->basketList->productList = (productPtr *) malloc(sizeof(productPtr));
             iter->basketList->productList->next = NULL;
             iter->basketList->productList->id = productID;
-            iter->basketList->amount += returnPrice(productID);
+            iter->basketList->amount += productPrice;
+            printf("productID: %d added to %s.\n", productID, iter->name);
             return;
         }
+
         while(iter->basketList->productList->next != NULL)
         {
             iter->basketList->productList = iter->basketList->productList->next;
         }
-        iter->basketList->productList->next = (struct product *) malloc(sizeof(struct product));
-        iter->basketList->productList = iter->basketList->productList->next;
-        iter->basketList->productList->id = productID;
-        iter->basketList->productList->next = NULL;
-        iter->basketList->amount += returnPrice(productID);
-        return;
+
+        iter->basketList->productList->next = (productPtr *) malloc(sizeof(productPtr));
+        iter->basketList->productList->next->next = NULL;
+        iter->basketList->productList->next->id = productID;
+        iter->basketList->amount += productPrice;
+        printf("productID: %d added to %s.\n", productID, iter->name);
     }
 }
 
@@ -197,27 +167,31 @@ void customerText()
     }
 }
 
-void linkCustomers(int id, char name[], char surname[])
+void linkCustomers(int customerID, char customerName[], char customerSurname[])
 {
     if(customerNode == NULL)
     {
         customerNode = (customerPtr *) malloc(sizeof(customerPtr));
-        customerNode->id = id;
-        strcpy(customerNode->name, name);
-        strcpy(customerNode->surname, surname);
+        customerNode->id = customerID;
+        strcpy(customerNode->name, customerName);
+        strcpy(customerNode->surname, customerSurname);
         customerNode->next = NULL;
+        customerNode->basketList = NULL;
         return;
     }
+
     customerPtr *iter = customerNode;
+
     while(iter->next != NULL)
     {
         iter = iter->next;
     }
+    
     iter->next = (customerPtr *) malloc(sizeof(customerPtr));
     iter = iter->next;
-    iter->id = id;
-    strcpy(iter->name, name);
-    strcpy(iter->surname, surname);
+    iter->id = customerID;
+    strcpy(iter->name, customerName);
+    strcpy(iter->surname, customerSurname);
     iter->basketList = NULL;
     iter->next = NULL;
 }
@@ -235,6 +209,26 @@ void displayCustomers()
         printf("ID: %d\tName: %s\tSurname: %s\n", iter->id, iter->name, iter->surname);
         iter = iter->next;
     }
+}
+
+int returnPrice(int productID)
+{
+    productPtr *iter = productNode;
+
+    if(productNode->id == productID)
+    {
+        return productNode->price;
+    }
+
+    while(iter->next != NULL)
+    {
+        if(iter->next->id == productID)
+        {
+            return iter->next->price;
+        }
+        iter = iter->next;
+    }
+    return -1;
 }
 
 void productText()
@@ -310,6 +304,16 @@ void addCustomer()
     scanf("%s", surnameToAdd);
     customerPtr *iter = customerNode;
     customerPtr *iter2 = customerNode;
+    if(customerNode == NULL)
+    {
+        customerNode = (customerPtr *) malloc(sizeof(customerPtr));
+        customerNode->next = NULL;
+        customerNode->id = 1;
+        strcpy(customerNode->name, nameToAdd);
+        strcpy(customerNode->surname, surnameToAdd);
+        customerNode->basketList = NULL;
+        return;
+    }
     while(iter != NULL)
     {
         if(strcmp(iter->name, nameToAdd) == 0)
@@ -376,34 +380,22 @@ void removeCustomer()
 void addProductToBasket(int customerID, int productID)
 {
     customerPtr *iter = customerNode;
-    int basketListID;
+    int basketListID, productPrice = returnPrice(productID);
 
-    while(iter->id != customerID) // checking if customer id in linked list.
-    {
-        if(iter == NULL)
-        {
-            printf("Please check the customer ID.\n");
-            return;
-        }
-        iter = iter->next;
-    }
-
-    if(returnPrice(productID) == -1) // checking product id if it exists.
+    if(productPrice == -1) // checking product id if it exists.
     {
         printf("Please check the product ID.\n");
         return;
     }
 
-    if(iter->basketList == NULL)
-    { 
-        iter->basketList = (struct basket *) malloc(sizeof(struct basket));
-        iter->basketList->next = NULL;
-        iter->basketList->id = 1;
-        iter->basketList->amount = 0;
-        iter->basketList->productList = (struct product *) malloc(sizeof(struct product));
-        iter->basketList->productList->next = NULL;
-        iter->basketList->amount += returnPrice(productID);
-        iter->basketList->productList->id = productID;
+    while(iter->id != customerID)
+    {
+        iter = iter->next;
+    }
+
+    if(iter == NULL)
+    {
+        printf("Please check the customer ID.\n");
         return;
     }
 
@@ -412,18 +404,12 @@ void addProductToBasket(int customerID, int productID)
         iter->basketList = iter->basketList->next;
     }
 
-    basketListID = iter->basketList->id + 1;
-    iter->basketList->next = (struct basket *) malloc(sizeof(struct basket));
-    iter->basketList = iter->basketList->next;
-    iter->basketList->id = basketListID;
-    iter->basketList->next = NULL;
-
     if(iter->basketList->productList == NULL)
     {
         iter->basketList->productList = (struct product *) malloc(sizeof(struct product));
         iter->basketList->productList->next = NULL;
         iter->basketList->productList->id = productID;
-        iter->basketList->amount += returnPrice(productID);
+        iter->basketList->amount += productPrice;
         return;
     }
 
@@ -436,104 +422,224 @@ void addProductToBasket(int customerID, int productID)
     iter->basketList->productList = iter->basketList->productList->next;
     iter->basketList->productList->next = NULL;
     iter->basketList->productList->id = productID;
-    iter->basketList->amount += returnPrice(productID);
+    iter->basketList->amount += productPrice;
 }
 
-void addNewBasket(int customerID)
+int addNewBasket(int customerID)
 {
     customerPtr *iter = customerNode;
     int basketID = 1;
+
     while(iter->id != customerID)
     {
         if(iter == NULL)
         {
             printf("Please check the customer ID.\n");
-            return;
+            return -1;
         }
         iter = iter->next;
     }
+
     if(iter->basketList == NULL)
     {
         iter->basketList = (struct basket *) malloc(sizeof(struct basket));
         iter->basketList->next = NULL;
+        iter->basketList->productList = NULL;
         iter->basketList->amount = 0;
         iter->basketList->id = basketID;
-        return;
+        return 0;
     }
+
     while(iter->basketList->next != NULL)
     {
         iter->basketList = iter->basketList->next;
     }
+
     basketID = iter->basketList->id + 1;
     iter->basketList->next = (struct basket *) malloc(sizeof(struct basket));
     iter->basketList = iter->basketList->next;
+    iter->basketList->next = NULL;
+    iter->basketList->productList = NULL;
     iter->basketList->amount = 0;
     iter->basketList->id = basketID;
+    return 0;
+}
+
+int returnBasketAmount(int customerID)
+{
+    customerPtr *iter = customerNode;
+
+    while(iter->next != NULL)
+    {
+        iter = iter->next;
+    }
+    
+    iter = iter->next;
+    
+    if(iter->basketList == NULL || iter->basketList->productList == NULL)
+    {
+        return -1; // it means there is no basket or product in basket for the current user. 
+    }
+    
+    while(iter->basketList->next != NULL)
+    {
+        iter->basketList = iter->basketList->next;
+    }
+
+    if(iter->basketList->productList == NULL)
+    {
+        return -2;
+    }
+
+    return iter->basketList->amount;
+}
+
+void listSpecificProduct(int productID)
+{
+    productPtr *temp = productNode;
+    customerPtr *iter = customerNode;
+    int i = 1;
+
+    if(temp == NULL)
+    {
+        printf("There is no product.\n");
+        return;
+    }
+
+    if(iter == NULL)
+    {
+        printf("There is no customer.\n");
+        return;
+    }
+
+    while(temp->next != NULL && temp->next->id != productID) temp = temp->next;
+
+    if(temp->next == NULL)
+    {
+        printf("Product couldn't find.\n");
+        return;
+    }
+
+    while(iter != NULL)
+    {
+        while(iter->basketList != NULL)
+        {
+            if(iter->basketList->productList == NULL)
+            {
+                iter->basketList = iter->basketList->next;
+                continue;
+            }
+            while(iter->basketList->productList != NULL && iter->basketList->productList->id != productID)
+            {
+                iter->basketList->productList = iter->basketList->productList->next;
+            }
+            if(iter->basketList->productList == NULL)
+            {
+                break;
+            }
+            if(iter->basketList->productList->id == productID)
+            {
+                printf("%d. %s %s\n", i++, iter->name, iter->surname);
+                break;
+            }
+        }
+        iter = iter->next;
+    }
 }
 
 void case2()
 {
-    int currentUserID, productID;
+    int currentCustomerID = 0, productID, completeShopping, totalAmount, isNewBasketAdded;
+    bool isCustomerSelected = false;
     char choice;
-    printf("2.a. List customers\n2.b. Select one of the customers\n");
-    printf("2.c. List the products\n2.d. Add a product\n2.e. Complete shopping\n");
-    printf("What is your choice? (Ex: a or b): ");
-    scanf(" %c", &choice);
-    switch (choice)
-    {
-    case 'a':
-        displayCustomers();
-        case2();
-        break;
-
-    case 'b':
-        printf("Enter the ID of customer: ");
-        scanf("%d", &currentUserID);
-        customerPtr *iter = customerNode;
-        while(iter->id != currentUserID)
-        {
-            iter = iter->next;
-            if(iter == NULL)
-            {
-                printf("There is no customer that matches with ID that you chose.\n");
-                return;
-            }
-        }
-        printf("%d %s %s\n", iter->id, iter->name, iter->surname);
-        addNewBasket(currentUserID);
-        case2();
-        break;
-
-    case 'c':
-        displayProducts();
-        case2();
-        break;
-
-    case 'd':
-        printf("Enter the ID of customer: ");
-        scanf("%d", &currentUserID);
-        printf("Enter a product ID that will be added to the basket: ");
-        scanf("%d", &productID);
-        addProductToBasket(currentUserID, productID);
-        case2();
-        break;
-
-    case 'e':
-        break;
-
-    default:
-        break;
-    }
-}
-
-int main()
-{
-    int choice, choice2, currentUserID;
-    customerText();
-    productText();
     while(true)
     {
-        printf("1- Add a customer\n2- Add basket\n3- Remove customer\n4- Exit\n");
+        printf("2.a. List customers\n2.b. Select one of the customers\n");
+        printf("2.c. List the products\n2.d. Add a product\n2.e. Complete shopping\n");
+        printf("What is your choice? (Ex: a or b): ");
+        scanf(" %c", &choice);
+        
+        switch (choice)
+        {
+        case 'a':
+            displayCustomers();
+            continue;
+
+        case 'b':
+            if(isCustomerSelected == true)
+            {
+                printf("You have already chose a customer.\n");
+                continue;
+            }
+            printf("Enter the ID of customer: ");
+            scanf("%d", &currentCustomerID);
+            isNewBasketAdded = addNewBasket(currentCustomerID);
+            if(isNewBasketAdded == -1)
+            {
+                return;
+            }
+            isCustomerSelected = true;
+            continue;
+
+        case 'c':
+            displayProducts();
+            continue;
+
+        case 'd':
+            if(isCustomerSelected == false)
+            {
+                printf("Please, select one of the customers to continue.\n");
+                continue;
+            }
+            printf("Enter a product ID that will be added to the basket: ");
+            scanf("%d", &productID);
+            addProductToBasket(currentCustomerID, productID);
+            continue;
+
+        case 'e':
+            if(isCustomerSelected == false)
+            {
+                printf("Please, select one of the customers to continue.\n");
+                continue;
+            }
+            printf("If you want to complete shopping enter -1: ");
+            scanf("%d", &completeShopping);
+            totalAmount = returnBasketAmount(currentCustomerID);
+
+            if(completeShopping != -1)
+            {
+                continue;
+            }
+            if(totalAmount == -1)
+            {
+                printf("You have never borrowed a basket or product to your basket.\n");
+                return;
+            }
+            if(totalAmount == -2)
+            {
+                printf("You didn't borrow any product.");
+                return;
+            }
+            printf("The total amount of basket: %d\n", totalAmount);
+            return;
+
+        default:
+            break;
+        }
+    }
+}
+    
+int main()
+{
+    int choice, choice2, currentUserID, specificProductID;
+    customerText();
+    productText();
+    basketText();
+    while(true)
+    {
+        printf("1- Add a customer\n2- Add basket\n3- Remove customer\n");
+        printf("4- List the customers who boutght a specific product\n");
+        printf("5- List the total shopping amounts of each customer\n6- Exit\n");
         printf("What is your choice?: ");
         scanf("%d", &choice);
         switch (choice)
@@ -552,10 +658,14 @@ int main()
             displayCustomers();
             break;
         case 4:
-            //linkBaskets(1, 15,15);
-            printf("%d \n", returnPrice(28));
+            displayProducts();
+            printf("Enter ID of product: ");
+            scanf("%d", &specificProductID);
+
             return 0;
             break;
+        case 6:
+            return 0;
         default:
             break;
         }
