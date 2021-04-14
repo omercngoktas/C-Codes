@@ -1,0 +1,72 @@
+void linkBaskets(int customerID, int basketID, int productID)
+{
+	customerPtr *iterCustomer = customerNode;
+	int productPrice = returnPrice(productID);
+	
+	while(iterCustomer->id != customerID) //searching for customer according to customerID.
+	{
+		iterCustomer = iterCustomer->next;
+        if(iterCustomer == NULL) //means that requested customer is not in the linked list.
+        {
+            printf("Please check the customer id.\n");
+            return;
+        }
+	}
+
+    if(iterCustomer->basketList == NULL) //if customer has no basket, initiliazing his first basket and adding product.
+    {
+        iterCustomer->basketList = (basketPtr *) malloc(sizeof(basketPtr));
+        iterCustomer->basketList->next = NULL;
+        iterCustomer->basketList->id = basketID;
+        iterCustomer->basketList->amount = 0;
+        iterCustomer->basketList->productList = (productPtr *) malloc(sizeof(productPtr));
+        iterCustomer->basketList->productList->next = NULL;
+        iterCustomer->basketList->productList->id = productID;
+        iterCustomer->basketList->amount += productPrice;
+        return;
+    }
+
+    basketPtr *iterBasket = iterCustomer->basketList;
+    
+    while(iterBasket->id != basketID) //searching for proper basket.
+    {
+        iterBasket = iterBasket->next;
+        if(iterBasket == NULL) break;
+    }
+
+    if(iterBasket == NULL)
+    {
+        iterBasket = (basketPtr *) malloc(sizeof(basketPtr));
+        iterBasket->next = NULL;
+        iterBasket->id = basketID;
+        iterBasket->amount = 0;
+        iterBasket->amount += productPrice;
+        iterBasket->productList = (productPtr *) malloc(sizeof(productPtr));
+        iterBasket->productList->id = productID;
+        iterBasket->productList->next = NULL;
+        return;   
+    }
+
+    if(iterBasket->id == basketID)
+    {
+        productPtr *iterProduct = iterBasket->productList;
+        iterBasket->amount += returnPrice;
+        while(iterProduct != NULL)
+        {
+            iterProduct = iterProduct->next;
+        }
+        iterProduct = (productPtr *) malloc(sizeof(productPtr));
+        iterProduct->next = NULL;
+        iterProduct->id = productID;
+        return;
+    }
+
+
+
+
+    
+    productPtr *iterProduct = iterBasket->productList;
+
+
+    
+}
