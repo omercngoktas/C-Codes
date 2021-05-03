@@ -75,18 +75,21 @@ node *deleteNumber(node *root, int numberToDelete)
     {
         return NULL;
     }
+
     if(root->data == numberToDelete)
     {
         if(root->left == NULL && root->right == NULL)
         {
             return NULL;
         }
+
         if(root->right != NULL)
         {
             root->data = findMin(root->right);
             root->right = deleteNumber(root->right, numberToDelete);
             return root;
         }
+
         if(root->left != NULL)
         {
             root->data = findMax(root->left);
@@ -94,17 +97,18 @@ node *deleteNumber(node *root, int numberToDelete)
             return root;
         }
     }
+
     if(root->data < numberToDelete)
     {
         root->right = deleteNumber(root->right, numberToDelete);
         return root;
     }
+
     if(root->data > numberToDelete)
     {
         root->left = deleteNumber(root->left, numberToDelete);
         return root;
     }
-
 }
 
 void displayNumbers(node *root)
@@ -113,6 +117,7 @@ void displayNumbers(node *root)
     {
         return;
     }
+    
     displayNumbers(root->left);
     printf("%d ", root->data);
     displayNumbers(root->right);

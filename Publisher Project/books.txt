@@ -1,0 +1,13 @@
+1	VebaGeceleri	OrhanPamuk	YKY	23	20	544
+2	KardesiminHikayesi	ZulfuLivaneli	DK	26	15	324
+3	YeniHayat	OrhanPamuk	YKY	21	10	247
+4	Dava	FranzKafka	Athena	19	13	256
+5	NotreDame'inKamburu	VictorHugo	BeyazBalina	25	13	420
+6	SirPerdesiAralaniyor	SirArthurConanDoyle	Marti	5	10	192
+7	SucDetaydaSaklidir	SirArthurConanDoyle	Marti	5	23	334
+8	SupheAslaUyumaz	SirArthurConanDoyle	Marti	5	23	416
+9	AkilOyunlarininGolgesinde	SirArthurConanDoyle	Marti	5	23	382
+10	GerceklerKanitIster	SirArthurConanDoyle	Marti	5	23	318
+11	AklinSuphesiSucunGercegidir	SirArthurConanDoyle	Marti	5	23	336
+12	Cezmi	NamikKemal	BeyazBalina	6	17	287
+13	Dokunmadan	NerminYildirim	HepKitap	8	22	314

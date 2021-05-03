@@ -1,0 +1,6 @@
+20171	Turan	Fahri
+20172	Enver	Erin
+20174	Meltem	Harman
+20181	Fatma	Acar
+20182	Esma	Kavak
+20191	Seren	Karakan
