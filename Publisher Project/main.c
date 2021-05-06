@@ -83,6 +83,11 @@ void searchForBookName();
 void searchForBookID();
 bool isBookTakenByCustomer(customerPtr *iterCustomer, booksPtr *iterBook);
 void bookAcceptReturn();
+void saveCustomerChanges();
+void savePersonelChanges();
+void saveBookChanges();
+void saveSoldBooks();
+void addPersonel();
 
 
 void printCustomer(customerPtr *root) //gelen ogrencinin bilgilerini bastirir.
@@ -115,6 +120,7 @@ void booksText() //books.txt dosyasindan kitap bilgileri okunur ve linkBooks() f
             break;
         linkBooks(id, name, author, publisher, price, amount, pageNumber);
     }
+    fclose(booksText);
 }
 
 void linkBooks(int id, char name[], char author[], char publisher[], int price, int amount, int pageNumber)
@@ -186,6 +192,7 @@ void customerText() //customer.txt dosyasini okuyup gecerli musteriyi linkCustom
             break;
         linkCustomers(id, name, surname, budget); //gecerli kullanicinin node'a eklenmesi icin fonksiyona gonderilir.
     }
+    fclose(customerText);
 }
 
 void linkCustomers(int id, char name[], char surname[], int budget) //gecerli musteriyi node'a ekler.
@@ -252,6 +259,7 @@ void personelText() //personelleri personel.txt'den okuyup linkPersonels() fonks
             break;
         linkPersonels(id, name, surname);
     }
+    fclose(personelText);
 }
 
 void linkPersonels(int id, char name[], char surname[]) //gelen personel bilgilerini personel node'a ekler.
@@ -330,7 +338,7 @@ void linkSoldBooks(int idPersonel, int idCustomer, int idSoldBook) //gelen bilgi
 
     if(iterPersonel->id != idPersonel) //personelin olup olmadigini kontrol eder.
     {
-        printf("Personelin id'si herhangi bir personelle eslesmedi.\n");
+        printf("Personelin ID'si herhangi bir personelle eşleşmedi.\n");
         return;
     }
 
@@ -339,7 +347,7 @@ void linkSoldBooks(int idPersonel, int idCustomer, int idSoldBook) //gelen bilgi
 
     if(iterCustomer->id != idCustomer) //musterinin olup olmadigini kontrol eder.
     {
-        printf("Musterinin id'si herhangi bir musteriyle eslesmedi.\n");
+        printf("Müşterinin ID'si herhangi bir müşteriyle eşleşmedi.\n");
         return;
     }
 
@@ -488,6 +496,12 @@ void sellBook(int idCurrentPersonel)
         }
     }
 
+    if(iterBook->amount <= 0)
+    {
+        printf("'%s' isimli kitabın stokları tükenmiştir.\n", iterBook->name);
+        return;
+    }
+
     printf("Yazarı %s olan %s isimli kitap %d lira ile %s %s isimli müşteriye satılacak.\n", iterBook->author, iterBook->name, iterBook->price, iterCustomer->name, iterCustomer->surname);
     printf("Onaylamak için 1, menüden çıkmak için 0'a basınız: ");
     scanf("%d", &choice);
@@ -510,6 +524,9 @@ void sellBook(int idCurrentPersonel)
             iterBook->amount--;
             printf("Kitap başarıyla satılmıştır.\n");
             linkSoldBooks(idCurrentPersonel,iterCustomer->id, iterBook->id); //kitap personelin satisina eklenir.
+            saveBookChanges();
+            saveCustomerChanges();
+            saveSoldBooks();
         }
 
         if(paymentChoice == 1) //odeme elden yapilacagi icin diger adimlara gecer.
@@ -539,6 +556,9 @@ void sellBook(int idCurrentPersonel)
                     iterBook->amount--;
                     printf("Kitap başarıyla satılmıştır.\n");
                     linkSoldBooks(idCurrentPersonel,iterCustomer->id, iterBook->id); //kitap personelin satisina eklenir.
+                    saveBookChanges();
+                    saveCustomerChanges();
+                    saveSoldBooks();
                 }
             }
 
@@ -548,6 +568,9 @@ void sellBook(int idCurrentPersonel)
                 iterBook->amount--;
                 linkSoldBooks(idCurrentPersonel,iterCustomer->id, iterBook->id); //kitap personelin satisina eklenir.
                 printf("Para üstü %d lira ödenmiştir.\n", moneyAmount-iterBook->price);
+                saveBookChanges();
+                saveCustomerChanges();
+                saveSoldBooks();
             }
         }
     }
@@ -580,6 +603,7 @@ void addBook() //kitapların bulunduğu linked list'e kitap ekler.
 
     linkBooks(id, name, author, publisher, price, amount, pageNumber); //linked list'e kitabi ekleme kismi.
     printf("Kitap başarıyla eklenmiştir.\n");
+    saveBookChanges();
 }
 
 void addCustomer() //musterilerin bulundugu linked list'e yeni bir müsteri ekler.
@@ -603,6 +627,7 @@ void addCustomer() //musterilerin bulundugu linked list'e yeni bir müsteri ekle
 
     linkCustomers(id, name, surname, budget); //musteriyi linked list'e ekler.
     printf("Müşteri başarıyla eklenmiştir.\n");
+    saveCustomerChanges();
 }
 
 void displayCustomersBooks() //girilecek musterinin id'sinden aldigi tum kitaplari listeler.
@@ -696,6 +721,7 @@ void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
 
                 strcpy(iterBook->name, name);
                 printf("Kitap adı başarıyla '%s' olarak güncellendi.\n", iterBook->name);
+                saveBookChanges();
                 continue;
             
             case 'b': //kitap yazari degistirme
@@ -708,6 +734,7 @@ void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
                 
                 strcpy(iterBook->author, author);
                 printf("%s isimli kitabın yeni yazarı '%s' olarak güncellendi.\n", iterBook->name, iterBook->author);
+                saveBookChanges();
                 continue;
             
             case 'c': //kitabin yayin evini degistirme
@@ -720,6 +747,7 @@ void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
                 
                 strcpy(iterBook->publisher, publisher);
                 printf("%s isimli kitabın yeni yayın evi '%s' olarak güncellendi.\n", iterBook->name, iterBook->publisher);
+                saveBookChanges();
                 continue;
             
             case 'd': //kitabin fiyatini degistirme
@@ -732,6 +760,7 @@ void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
                 
                 iterBook->price = price;
                 printf("%s isimli kitabın yeni fiyatı '%d' olarak güncellendi.\n", iterBook->name, iterBook->price);
+                saveBookChanges();
                 continue;
             
             case 'e': //kitap adedini degistirme
@@ -744,6 +773,7 @@ void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
                 
                 iterBook->amount = amount;
                 printf("%s isimli kitabın yeni adedi '%d' olarak güncellendi.\n", iterBook->name, iterBook->amount);
+                saveBookChanges();
                 continue;
 
             case 'f': //kitabin sayfa sayisini degistirme
@@ -756,6 +786,7 @@ void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
                 
                 iterBook->pageNumber = pageNumber;
                 printf("%s isimli kitabın yeni sayfa sayısı '%d' olarak güncellendi.\n", iterBook->name, iterBook->pageNumber);
+                saveBookChanges();
                 continue;
             
             case 'q': //ana menuye donus
@@ -802,6 +833,7 @@ void updateCustomerData() //musterilerin bilgilerini gunceller.
 
             strcpy(iter->name, name);
             printf("Müşterinin ismi başarıyla '%s' olarak güncellendi.\n", iter->name);
+            saveCustomerChanges();
             continue;
         
         case 'b': //musterinin soyadini degistirir.
@@ -814,6 +846,7 @@ void updateCustomerData() //musterilerin bilgilerini gunceller.
 
             strcpy(iter->surname, surname);
             printf("Müşterinin soyismi başarıyla '%s' olarak güncellendi.\n", iter->surname);
+            saveCustomerChanges();
             continue;
         
         case 'c': //musterinin bakiyesini degistirir.
@@ -826,6 +859,7 @@ void updateCustomerData() //musterilerin bilgilerini gunceller.
 
             iter->budget = budget;
             printf("%s isimli müşterinin yeni bakiyesi başarıyla '%d' olarak güncellendi.\n", iter->name, iter->budget);
+            saveCustomerChanges();
             continue;
         
         case 'q': //ana menuye donus.
@@ -958,6 +992,87 @@ void bookAcceptReturn() //kitap iadesi alir.
     iterBook->amount++; //kitap iade alindigindan kitabin adedi 1 arttirilir.
     printf("Bakiye güncellendikten sonraki durum: '%d' lira\n", iterCustomer->budget);
     printf("İade işlemi tamamlanmıştır.\nAna menüye dönülüyor.\n");
+    saveCustomerChanges();
+    saveSoldBooks();
+    saveBookChanges();
+}
+
+void saveCustomerChanges()
+{
+    FILE *customerText = fopen("customer.txt", "w");
+    customerPtr *iterCustomers = customerNode;
+
+    while(iterCustomers != NULL)
+    {
+        fprintf(customerText, "%d %s %s %d\n", iterCustomers->id, iterCustomers->name, iterCustomers->surname, iterCustomers->budget);
+        iterCustomers = iterCustomers->next;
+    }
+    fclose(customerText);
+}
+
+void saveBookChanges()
+{
+    FILE *bookText = fopen("books.txt", "w");
+    booksPtr *iterBooks = booksNode;
+    
+    while(iterBooks != NULL)
+    {
+        fprintf(bookText, "%d %s %s %s %d %d %d\n", iterBooks->id, iterBooks->name, iterBooks->author, iterBooks->publisher, iterBooks->price, iterBooks->amount, iterBooks->pageNumber);
+        iterBooks = iterBooks->next;
+    }
+    fclose(bookText);
+}
+
+void savePersonelChanges()
+{
+    FILE *personelText = fopen("personel.txt", "w");
+    personelPtr *iterPersonel = personelNode;
+
+    while(iterPersonel != NULL)
+    {
+        fprintf(personelText, "%d %s %s\n", iterPersonel->id, iterPersonel->name, iterPersonel->surname);
+        iterPersonel = iterPersonel->next;
+    }
+    fclose(personelText);
+}
+
+void saveSoldBooks()
+{
+    FILE *soldBookText = fopen("soldBooks.txt", "w");
+    personelPtr *iterPersonel = personelNode;
+
+    while(iterPersonel != NULL)
+    {
+        if(iterPersonel->soldBooksList != NULL)
+        {
+            soldBooksPtr *iterSoldBook = iterPersonel->soldBooksList;
+            while(iterSoldBook != NULL)
+            {
+                fprintf(soldBookText, "%d %d %d\n", iterPersonel->id, iterSoldBook->idCustomer, iterSoldBook->idSoldBook);
+                iterSoldBook = iterSoldBook->next;
+            }
+        }
+        iterPersonel = iterPersonel->next;
+    }
+    fclose(soldBookText);
+}
+
+void addPersonel()
+{
+    int id;
+    char name[SIZE], surname[SIZE];
+    printf("Oluşturulacak personelin adını boşluk bırakmadan giriniz: ");
+    scanf("%s", name);
+    printf("Oluşturulacak personelin soyadını boşluk bırakmadan giriniz: ");
+    scanf("%s", surname);
+    personelPtr *iterPersonel = personelNode;
+    while(iterPersonel->next != NULL)
+        iterPersonel = iterPersonel->next;
+    
+    id = iterPersonel->id + 1;
+    linkPersonels(id, name, surname);
+    printf("%s %s isimli personel başarıyla oluşturulmuştur.\n", name, surname);
+    savePersonelChanges();
 }
 
 int main()
@@ -975,11 +1090,13 @@ int main()
     printf("İşlem: ");
     scanf("%d", &adminOrPersonel);
 
+    while(1)
+    {
     switch (adminOrPersonel)
     {
         case 1:
             printf("1- Müşteri ekle\n2- Müşteri bilgilerini güncelle\n3- Kitap ekle\n4- Kitap bilgilerini güncelle\n");
-            printf("5- Personellerin satışlarını listele\n");
+            printf("5- Personel ekle\n6- Personellerin satışlarını listele\n");
             printf("İşlem: ");
             scanf("%d", &choice2);
             switch (choice2)
@@ -1001,6 +1118,9 @@ int main()
                     break;
 
                 case 5:
+                    addPersonel();
+
+                case 6:
                     displaySoldBooks();
                     break;
 
@@ -1063,6 +1183,7 @@ int main()
                 }
             }
             break;
+    }
     }
     return 0;
 }
