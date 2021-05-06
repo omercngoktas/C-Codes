@@ -57,6 +57,8 @@ customerPtr *customerNode = NULL;
 typedef struct soldBooks soldBooks;
 typedef soldBooks soldBooksPtr;
 
+void printCustomer(customerPtr *root);
+void printBook(booksPtr *root);
 void booksText();
 void linkBooks(int id, char name[], char author[], char publisher[], int price, int amount, int pageNumber);
 void displayBooks();
@@ -76,6 +78,22 @@ void addBook();
 void addCustomer();
 void displayCustomersBooks();
 void updateBookData();
+void updateCustomerData();
+void searchForBookName();
+void searchForBookID();
+bool isBookTakenByCustomer(customerPtr *iterCustomer, booksPtr *iterBook);
+void bookAcceptReturn();
+
+
+void printCustomer(customerPtr *root) //gelen ogrencinin bilgilerini bastirir.
+{
+    printf("ID: %d,\tİsim: %s,\tSoyisim: %s,\tBakiye: %d\n", root->id, root->name, root->surname, root->budget);
+}
+
+void printBook(booksPtr *root) //gelen kitabin bilgilerini bastirir.
+{
+    printf("ID: %d,\tKitap adı: %s,\tYazar adı: %s,\tYayın evi: %s,\tFiyat: %d,\tMiktar: %d,\tSayfa sayısı: %d\n", root->id, root->name, root->author, root->publisher, root->price, root->amount, root->pageNumber);
+}
 
 void booksText() //books.txt dosyasindan kitap bilgileri okunur ve linkBooks() fonksiyonuna gonderilir.
 {
@@ -144,7 +162,7 @@ void displayBooks()
     booksPtr *iter = booksNode;
     while(iter != NULL)
     {
-        printf("ID: %d\tKitap adı: %s\tYazar adı: %s\tYayın evi: %s\tFiyat: %d\tMiktar: %d\tSayfa sayısı: %d\n", iter->id, iter->name, iter->author, iter->publisher, iter->price, iter->amount, iter->pageNumber);
+        printBook(iter);
         iter = iter->next;
     }
 }
@@ -210,7 +228,7 @@ void displayCustomers() //musterileri listeler.
 
     while(iter != NULL) //musteri node'unun sonuna kadar giderek musterilerin bilgilerini bastirir.
     {
-        printf("ID: %d, Ad-soyad: %s %s, Bakiye: %d\n", iter->id, iter->name, iter->surname, iter->budget);
+        printCustomer(iter);
         iter = iter->next;
     }
 }
@@ -640,7 +658,7 @@ void displayCustomersBooks() //girilecek musterinin id'sinden aldigi tum kitapla
     }
 }
 
-void updateBookData()
+void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
 {
     int idBook, changeChoice, price, amount, pageNumber;
     char choice, name[SIZE], author[SIZE], publisher[SIZE];
@@ -668,7 +686,7 @@ void updateBookData()
 
         switch (choice)
         {
-            case 'a':
+            case 'a': //kitap adi degistirme
                 printf("Yeni kitap adı giriniz (boşluk bırakmadan): ");
                 scanf("%s", name);
                 printf("%s isimli kitabın yeni ismi %s olarak güncellenecek.\nOnaylıyor musunuz? (evet için 1, hayır için 0): ", iterBook->name, name);
@@ -680,11 +698,11 @@ void updateBookData()
                 printf("Kitap adı başarıyla '%s' olarak güncellendi.\n", iterBook->name);
                 continue;
             
-            case 'b':
+            case 'b': //kitap yazari degistirme
                 printf("Kitabın yeni yazar adını giriniz (boşluk bırakmadan): ");
                 scanf("%s", author);
                 printf("Yazarı %s olan %s isimli kitabın yeni yazarı %s olarak güncellenecek.\n Onaylıyor musunuz? (evet için 1, hayır için 0): ", iterBook->author, iterBook->name, author);
-                scanf("%d", changeChoice);
+                scanf("%d", &changeChoice);
                 if(changeChoice == 0)
                     continue;
                 
@@ -692,11 +710,11 @@ void updateBookData()
                 printf("%s isimli kitabın yeni yazarı '%s' olarak güncellendi.\n", iterBook->name, iterBook->author);
                 continue;
             
-            case 'c':
+            case 'c': //kitabin yayin evini degistirme
                 printf("Kitabın yeni yayın evini giriniz (boşluk bırakmadan): ");
                 scanf("%s", publisher);
                 printf("Yayın evi %s olan %s isimli kitabın yeni yayın evi %s olarak güncellenecek.\n Onaylıyor musunuz? (evet için 1, hayır için 0): ", iterBook->publisher, iterBook->name, author);
-                scanf("%d", changeChoice);
+                scanf("%d", &changeChoice);
                 if(changeChoice == 0)
                     continue;
                 
@@ -704,11 +722,11 @@ void updateBookData()
                 printf("%s isimli kitabın yeni yayın evi '%s' olarak güncellendi.\n", iterBook->name, iterBook->publisher);
                 continue;
             
-            case 'd':
+            case 'd': //kitabin fiyatini degistirme
                 printf("Kitabın yeni fiyatını giriniz: ");
                 scanf("%d", &price);
                 printf("Fiyatı %d olan %s isimli kitabın yeni fiyatı %d olarak güncellenecek.\n Onaylıyor musunuz? (evet için 1, hayır için 0): ", iterBook->price, iterBook->name, price);
-                scanf("%d", changeChoice);
+                scanf("%d", &changeChoice);
                 if(changeChoice == 0)
                     continue;
                 
@@ -716,11 +734,11 @@ void updateBookData()
                 printf("%s isimli kitabın yeni fiyatı '%d' olarak güncellendi.\n", iterBook->name, iterBook->price);
                 continue;
             
-            case 'e':
+            case 'e': //kitap adedini degistirme
                 printf("Kitabın yeni adedini giriniz: ");
                 scanf("%d", &amount);
                 printf("Adedi %d olan %s isimli kitabın yeni adedi %d olarak güncellenecek.\n Onaylıyor musunuz? (evet için 1, hayır için 0): ", iterBook->amount, iterBook->name, amount);
-                scanf("%d", changeChoice);
+                scanf("%d", &changeChoice);
                 if(changeChoice == 0)
                     continue;
                 
@@ -728,11 +746,11 @@ void updateBookData()
                 printf("%s isimli kitabın yeni adedi '%d' olarak güncellendi.\n", iterBook->name, iterBook->amount);
                 continue;
 
-            case 'f':
+            case 'f': //kitabin sayfa sayisini degistirme
                 printf("Kitabın yeni sayfa sayısını giriniz: ");
                 scanf("%d", &pageNumber);
                 printf("Sayfa sayısı %d olan %s isimli kitabın yeni sayfa sayısı %d olarak güncellenecek.\n Onaylıyor musunuz? (evet için 1, hayır için 0): ", iterBook->pageNumber, iterBook->name, pageNumber);
-                scanf("%d", changeChoice);
+                scanf("%d", &changeChoice);
                 if(changeChoice == 0)
                     continue;
                 
@@ -740,7 +758,7 @@ void updateBookData()
                 printf("%s isimli kitabın yeni sayfa sayısı '%d' olarak güncellendi.\n", iterBook->name, iterBook->pageNumber);
                 continue;
             
-            case 'q':
+            case 'q': //ana menuye donus
                 continue;
             
             default:
@@ -749,7 +767,7 @@ void updateBookData()
     }
 }
 
-void updateCustomerData()
+void updateCustomerData() //musterilerin bilgilerini gunceller.
 {
     int id, budget, changeChoice;
     char choice, name[SIZE], surname[SIZE];
@@ -760,7 +778,7 @@ void updateCustomerData()
     customerPtr *iter;
     
     iter = isCustomerValid(id);
-    if(iter == NULL)
+    if(iter == NULL) //girilen id'ye ait musteri olmadigini belirtir.
     {
         printf("Girmiş olduğunuz müşterinin ID'sini kontrol ediniz.\n");
         return;
@@ -768,13 +786,13 @@ void updateCustomerData()
 
     while(1)
     {
-        printf("Güncellemek istediğiniz müşterinin bilgileri:");
-        printf("ID: %d, İsim: %s, Soyisim: %s, Bakiye: %d\n", iter->id, iter->name, iter->surname, iter->budget);
+        printf("Güncellemek istediğiniz müşterinin bilgileri:\n");
+        printCustomer(iter);
         printf("a. İsim güncelle\nb. Soyisim güncelle\nc. Bakiyeyi güncelle\nq. Ana menüye dön\nYapmak istediğiniz işlemi giriniz: ");
         scanf(" %c", &choice);
         switch (choice)
         {
-        case 'a':
+        case 'a': //musterinin ismini degistirir.
             printf("Yeni isim giriniz (boşluk bırakmadan): ");
             scanf("%s", name);
             printf("%s isimli kullanıcını yeni ismi %s olarak güncellenecek.\nOnaylıyor musunuz? (evet için 1, hayır için 0): ", iter->name, name);
@@ -786,7 +804,7 @@ void updateCustomerData()
             printf("Müşterinin ismi başarıyla '%s' olarak güncellendi.\n", iter->name);
             continue;
         
-        case 'b':
+        case 'b': //musterinin soyadini degistirir.
             printf("Yeni soyisim giriniz (boşluk bırakmadan): ");
             scanf("%s", surname);
             printf("%s soyisimli müşterinin yeni soyismi %s olarak güncellenecek.\nOnaylıyor musunuz? (evet için 1, hayır için 0): ", iter->surname, surname);
@@ -798,10 +816,10 @@ void updateCustomerData()
             printf("Müşterinin soyismi başarıyla '%s' olarak güncellendi.\n", iter->surname);
             continue;
         
-        case 'c':
+        case 'c': //musterinin bakiyesini degistirir.
             printf("Yeni bakiye giriniz (boşluk bırakmadan): ");
-            scanf("%d", budget);
-            printf("%d bakiyesi olan %s isimli müşterinin yeni bakiyesi %s olarak güncellenecek.\nOnaylıyor musunuz? (evet için 1, hayır için 0): ", iter->budget, iter->name, budget);
+            scanf("%d", &budget);
+            printf("%d bakiyesi olan %s isimli müşterinin yeni bakiyesi %d olarak güncellenecek.\nOnaylıyor musunuz? (evet için 1, hayır için 0): ", iter->budget, iter->name, budget);
             scanf("%d", &changeChoice);
             if(changeChoice == 0)
                 continue;
@@ -810,7 +828,7 @@ void updateCustomerData()
             printf("%s isimli müşterinin yeni bakiyesi başarıyla '%d' olarak güncellendi.\n", iter->name, iter->budget);
             continue;
         
-        case 'q':
+        case 'q': //ana menuye donus.
             return;
         
         default:
@@ -819,9 +837,132 @@ void updateCustomerData()
     }
 }
 
+void searchForBookName() //girilen kitap ismine gore arama yapar ve bilgileri bastirir.
+{
+    char bookName[SIZE];
+    printf("Arama yapmak istediğiniz kitabın adını giriniz (boşluk olmadan): ");
+    scanf("%s", bookName);
+    booksPtr *iterBook = booksNode;
+
+    while(strcmp(iterBook->name, bookName) != 0)
+    {
+        iterBook = iterBook->next;
+        if(iterBook == NULL) //girilen isme ait kitap bulunmadigini belirtir.
+        {
+            printf("Girmiş olduğunuz '%s' isimli kitap bulunamadı.\n", bookName);
+            return;
+        }
+    }
+
+    printf("Kitap listede bulundu.\n");
+    printBook(iterBook); //kitabin bilgilerini bastirir.
+}
+
+void searchForBookID() //girilen kitabin id'sine gore arama yapar.
+{
+    int idBook;
+    printf("Arama yapmak istediğiniz kitabın ID'sini giriniz: ");
+    scanf("%d", &idBook);
+    booksPtr *iterBook = booksNode;
+
+    while(iterBook->id != idBook)
+    {
+        iterBook = iterBook->next;
+        if(iterBook == NULL) //girilen id'ye ait bir kitap bulunamadigini belirtir.
+        {
+            printf("ID'si '%d' olan kitap bulunamadı.\n", idBook);
+            return;
+        }
+    }
+
+    printf("Kitap listede bulundu.\n");
+    printBook(iterBook); //kitabin bilgilerini bastirir.
+}
+
+bool isBookTakenByCustomer(customerPtr *iterCustomer, booksPtr *iterBook) //kitabin musteri tarafindan alinip alinmadigini kontrol eder.
+{
+    personelPtr *iterPersonel = personelNode;
+    soldBooksPtr *iterSoldBooks;
+
+    while(iterPersonel != NULL) //tum personellerin satisini kontrol eder.
+    {
+        soldBooksPtr *iterSoldBooks = iterPersonel->soldBooksList;
+
+        if(iterSoldBooks != NULL) //personelin satislarina bakar.
+        {
+            while(iterSoldBooks != NULL) //tum kitap satislarini gezer.
+            {
+                if(iterSoldBooks->idCustomer == iterCustomer->id && iterSoldBooks->idSoldBook == iterBook->id)
+                { //satilan kitap musteri id'si ile uyusuyordur, true deger dondurulur.
+                    soldBooksPtr *temp = iterSoldBooks;
+                    iterSoldBooks = iterSoldBooks->next;
+                    free(temp);
+                    return true;
+                }
+                if(iterSoldBooks->next->idCustomer == iterCustomer->id && iterSoldBooks->next->idSoldBook == iterBook->id)
+                {
+                    soldBooksPtr *temp = iterSoldBooks->next;
+                    iterSoldBooks->next = iterSoldBooks->next->next;
+                    free(temp);
+                    return true;
+                }
+                iterSoldBooks = iterSoldBooks->next;
+            }
+        }
+        iterPersonel = iterPersonel->next;
+    }
+    return false; //kitap musteriye satilmadigi icin false deger dondurulur.
+}
+
+void bookAcceptReturn() //kitap iadesi alir.
+{
+    int idCustomer, idBook;
+
+    customerPtr *iterCustomer = customerNode;
+    booksPtr *iterBook = booksNode;
+
+    printf("Kitap iade edecek müşterinin ID'sini giriniz: ");
+    scanf("%d", &idCustomer);
+
+    iterCustomer = isCustomerValid(idCustomer); //musterinin database'de olup olmadigini kontrol eder. musteri varsa iterCustomer'a o musterinin bilgileri dondurulur.
+    if(iterCustomer == NULL)
+    {
+        printf("Girmiş olduğunuz ID'ye ait herhangi bir müşteri bulunamadı.\n");
+        return;
+    }
+
+    printf("Kitabı iade edecek müşterinin bilgileri:\n");
+    printCustomer(iterCustomer); //musteri bilgileri bastirilir.
+
+    printf("İade edilecek kitabın ID'sini giriniz:");
+    scanf("%d", &idBook);
+
+    iterBook = isBookValid(idBook); //kitabin olup olmadigini kontrol eder, yoksa NULL deger atanir, varsa bilgiler iterBook'a atanir.
+    if(iterBook == NULL)
+    {
+        printf("Girmiş olduğunuz ID'ye ait herhangi bir kitap bulunamadı.\n");
+        return;
+    }
+    
+    if(isBookTakenByCustomer(iterCustomer, iterBook) == false)
+    {
+        printf("Girilen bilgiler uyuşmuyor. '%s %s' isimli müşteri '%s' isimli kitabı almamıştır.\n", iterCustomer->name, iterCustomer->surname, iterBook->name);
+        return;
+    }
+
+    printf("Girmiş olduğunuz ID'ye ait kitap bilgileri:\n");
+    printBook(iterBook); //kitap bilgileri bastirilir.
+    printf("'%s' isimli kitap iade alınmıştır. İade ücreti olan '%d' lira müşterinin bakiyesine eklenmiştir.\n", iterBook->name, iterBook->price);
+    printf("Bakiye güncellenmeden önceki durum: '%d' lira\n", iterCustomer->budget);
+    iterCustomer->budget += iterBook->price; //iade ucreti musterinin bakiyesine yansitilir.
+    iterBook->amount++; //kitap iade alindigindan kitabin adedi 1 arttirilir.
+    printf("Bakiye güncellendikten sonraki durum: '%d' lira\n", iterCustomer->budget);
+    printf("İade işlemi tamamlanmıştır.\nAna menüye dönülüyor.\n");
+}
+
 int main()
 {
-    int idPersonel, choice, changeChoice;
+    int idPersonel, choice, choice2, changeChoice, adminOrPersonel;
 
     setlocale(LC_ALL, "Turkish");
     booksText();
@@ -829,64 +970,99 @@ int main()
     personelText();
     soldBooksText();
 
-    printf("DIKKAT!\nYapacağınız işlemler verilerde değişikliklere sebep olacaktır.\n");
-    printf("Değişikliklerin kaydedilmesini istemiyorsanız 0'a, kaydedilmesini istiyorsanız 1'e basınız: ");
-    scanf("%d", &changeChoice);
-    printf("\n");
-    displayPersonels();
+    printf("Kitap satış sistemine hoşgeldiniz.\n");
+    printf("1- Yönetici olarak giriş yap\n2- Personel olarak giriş yap\n");
+    printf("İşlem: ");
+    scanf("%d", &adminOrPersonel);
 
-    printf("Yukarıda listelenen personellerden hangisi ile işlem yapacasınız?\n");
-    printf("Personel ID: ");
-    scanf("%d", &idPersonel);
-
-    while(isPersonelValid(idPersonel) == 1)
+    switch (adminOrPersonel)
     {
-        printf("\n1- Müşterileri listele\n2- Kitapları listele\n3- Personelleri listele\n");
-        printf("4- Personellerin satışlarını listele\n5- Kitap satışı yap\n6- Kitap ekle\n7- Müşteri ekle\n");
-        printf("8- Müşterinin aldığı kitapları listele\n9- Kitap bilgilerini güncelle\n10- Müşteri bilgilerini güncelle\n");
-        printf("Yapmak istediğiniz işlem: ");
-        scanf("%d", &choice);
-
-        switch (choice)
-        {
         case 1:
-            displayCustomers();
-            break;
+            printf("1- Müşteri ekle\n2- Müşteri bilgilerini güncelle\n3- Kitap ekle\n4- Kitap bilgilerini güncelle\n");
+            printf("5- Personellerin satışlarını listele\n");
+            printf("İşlem: ");
+            scanf("%d", &choice2);
+            switch (choice2)
+            {
+                case 1:
+                    addCustomer();
+                    break;
+
+                case 2:
+                    updateCustomerData();
+                    break;
+
+                case 3:
+                    addBook();
+                    break;
+
+                case 4:
+                    updateBookData();
+                    break;
+
+                case 5:
+                    displaySoldBooks();
+                    break;
+
+                default:
+                    break;
+            }
+        break;
 
         case 2:
-            displayBooks();
-            break;
-
-        case 3:
             displayPersonels();
-            break;
+            printf("Yukarıda listelenen personellerden hangisi ile işlem yapacasınız?\n");
+            printf("Personel ID: ");
+            scanf("%d", &idPersonel);
 
-        case 4:
-            displaySoldBooks();
-            break;
-        
-        case 5:
-            sellBook(idPersonel);
-            break;
-        
-        case 6:
-            addBook();
-            break;
-        
-        case 7:
-            addCustomer();
-            break;
-        
-        case 8:
-            displayCustomersBooks();
-            break;
-        
-        case 9:
-            updateBookData();
+            while(isPersonelValid(idPersonel) == 1)
+            {
+                printf("\n1- Müşterileri listele\n2- Kitapları listele\n3- Personelleri listele\n");
+                printf("4- Kitap satışı yap\n");
+                printf("5- Müşterinin aldığı kitapları listele\n");
+                printf("6- İsme göre kitap ara\n7- ID'ye göre kitap ara\n8- Kitap iadesi al\n");
+                printf("Yapmak istediğiniz işlem: ");
+                scanf("%d", &choice);
 
-        default:
+                switch (choice)
+                {
+                    case 1:
+                        displayCustomers();
+                        break;
+
+                    case 2:
+                        displayBooks();
+                        break;
+
+                    case 3:
+                        displayPersonels();
+                        break;
+                    
+                    case 4:
+                        sellBook(idPersonel);
+                        break;
+                    
+                    case 5:
+                        displayCustomersBooks();
+                        break;
+                    
+                    case 6:
+                        searchForBookName();
+                        break;
+                    
+                    case 7:
+                        searchForBookID();
+                        break;
+                    
+                    case 8:
+                        bookAcceptReturn();
+                        break;
+
+                    default:
+                        break;
+                }
+            }
             break;
-        }
     }
     return 0;
 }
