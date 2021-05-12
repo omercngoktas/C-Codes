@@ -57,39 +57,6 @@ customerPtr *customerNode = NULL;
 typedef struct soldBooks soldBooks;
 typedef soldBooks soldBooksPtr;
 
-void printCustomer(customerPtr *root);
-void printBook(booksPtr *root);
-void booksText();
-void linkBooks(int id, char name[], char author[], char publisher[], int price, int amount, int pageNumber);
-void displayBooks();
-void customerText();
-void linkCustomers(int id, char name[], char surname[], int budget);
-void displayCustomers();
-void personelText();
-void linkPersonels(int id, char name[], char surname[]);
-void soldBooksText();
-void linkSoldBooks(int idPersonel, int idCustomer, int idSoldBook);
-void displaySoldBooks();
-int isPersonelValid(int idCurrentPersonel);
-customerPtr *isCustomerValid(int idCurrentCustomer);
-booksPtr *isBookValid(int idCurrentBook);
-void sellBook(int idCurrentPersonel);
-void addBook();
-void addCustomer();
-void displayCustomersBooks();
-void updateBookData();
-void updateCustomerData();
-void searchForBookName();
-void searchForBookID();
-bool isBookTakenByCustomer(customerPtr *iterCustomer, booksPtr *iterBook);
-void bookAcceptReturn();
-void saveCustomerChanges();
-void savePersonelChanges();
-void saveBookChanges();
-void saveSoldBooks();
-void addPersonel();
-
-
 void printCustomer(customerPtr *root) //gelen ogrencinin bilgilerini bastirir.
 {
     printf("ID: %d,\tIsim: %s,\tSoyisim: %s,\tBakiye: %d\n", root->id, root->name, root->surname, root->budget);
@@ -157,22 +124,6 @@ void linkBooks(int id, char name[], char author[], char publisher[], int price, 
     iter->next = NULL;
 }
 
-void displayBooks()
-{
-    if(booksNode == NULL) //kitap olup olmadigini kontrol eder.
-    {
-        printf("Listelenecek herhangi bir kitap bulunamadi.");
-        return;
-    }
-
-    booksPtr *iter = booksNode;
-    while(iter != NULL)
-    {
-        printBook(iter);
-        iter = iter->next;
-    }
-}
-
 void customerText() //customer.txt dosyasini okuyup gecerli musteriyi linkCustomers()'a gonderir.
 {
     int id, budget;
@@ -223,23 +174,6 @@ void linkCustomers(int id, char name[], char surname[], int budget) //gecerli mu
     return;
 }
 
-void displayCustomers() //musterileri listeler.
-{
-    if(customerNode == NULL) //musteri node'unun bos olup olmadigini kontrol eder.
-    {
-        printf("Listelenecek herhangi bir kullanici bulunamadi.\n");
-        return;
-    }
-
-    customerPtr *iter = customerNode;
-
-    while(iter != NULL) //musteri node'unun sonuna kadar giderek musterilerin bilgilerini bastirir.
-    {
-        printCustomer(iter);
-        iter = iter->next;
-    }
-}
-
 void personelText() //personelleri personel.txt'den okuyup linkPersonels() fonksiyonuna gonderir.
 {
     FILE *personelText = fopen("personel.txt", "r");
@@ -288,23 +222,6 @@ void linkPersonels(int id, char name[], char surname[]) //gelen personel bilgile
     iter->soldBooksList = NULL;
     iter->next = NULL;
     return;
-}
-
-void displayPersonels() //personelleri listeler.
-{
-    if(personelNode == NULL) //node'da personel olup olmadigini kontrol eder.
-    {
-        printf("Listelenecek herhangi bir personel bulunamadi.\n");
-        return;
-    }
-
-    personelPtr *iter = personelNode;
-
-    while(iter != NULL)
-    {
-        printf("ID: %d, Ad-Soyad: %s %s\n", iter->id, iter->name, iter->surname);
-        iter = iter->next;
-    }
 }
 
 void soldBooksText() //soldBooks.txt dosyasini okuyup linkSoldBooks() fonksiyonunu cagirir.
@@ -373,6 +290,39 @@ void linkSoldBooks(int idPersonel, int idCustomer, int idSoldBook) //gelen bilgi
         iter->idSoldBook = idSoldBook;
         iter->next = NULL;
         return;
+    }
+}
+
+void displayBooks()
+{
+    if(booksNode == NULL) //kitap olup olmadigini kontrol eder.
+    {
+        printf("Listelenecek herhangi bir kitap bulunamadi.");
+        return;
+    }
+
+    booksPtr *iter = booksNode;
+    while(iter != NULL)
+    {
+        printBook(iter);
+        iter = iter->next;
+    }
+}
+
+void displayCustomers() //musterileri listeler.
+{
+    if(customerNode == NULL) //musteri node'unun bos olup olmadigini kontrol eder.
+    {
+        printf("Listelenecek herhangi bir kullanici bulunamadi.\n");
+        return;
+    }
+
+    customerPtr *iter = customerNode;
+
+    while(iter != NULL) //musteri node'unun sonuna kadar giderek musterilerin bilgilerini bastirir.
+    {
+        printCustomer(iter);
+        iter = iter->next;
     }
 }
 
@@ -454,129 +404,6 @@ booksPtr *isBookValid(int idCurrentBook) //kitabin id'sini kontrol ederek olup o
     return iter; //kitabin bulundugunu belirtir ve '1' dondurur.
 }
 
-void sellBook(int idCurrentPersonel)
-{
-    int idCurrentCustomer, idCurrentBook, choice, paymentChoice, moneyAmount, choice2;
-
-    displayCustomers(); //tum musteriler ekranda gosterilir.
-
-    printf("Listelenen musterilerden hangisine satis yapilacak? ID giriniz. Ana menu icin 0'a basiniz: ");
-    scanf("%d", &idCurrentCustomer);
-    if(idCurrentCustomer == 0)
-    {
-        printf("Ana menuye donuluyor.\n\n");
-        return;
-    }
-
-    customerPtr *iterCustomer = customerNode;
-    while(iterCustomer->id != idCurrentCustomer)
-    {
-        iterCustomer = iterCustomer->next;
-        
-        if(iterCustomer == NULL) //musteri listede bulunmadigindan menuden cikilir.
-        {
-            printf("ID herhangi bir musteri ile eslesmedi. Tekrar deneyin.\n\n");
-            sellBook(idCurrentPersonel);
-        }
-    }
-
-    displayBooks();
-
-    printf("ID'si %d olan %s %s isimli musterinin almak istedigi kitabin ID'sini giriniz: ", iterCustomer->id, iterCustomer->name, iterCustomer->surname);
-    scanf("%d", &idCurrentBook);
-    
-    booksPtr *iterBook = booksNode;
-    while(iterBook->id != idCurrentBook)
-    {
-        iterBook = iterBook->next;
-        if(iterBook == NULL) //kitap listede bulunamadigindan menuden cikilir.
-        {
-            printf("Kitap listede bulunamadigi icin menuden cikiliyor.\n");
-            return;
-        }
-    }
-
-    if(iterBook->amount <= 0)
-    {
-        printf("'%s' isimli kitabin stoklari tukenmistir.\n", iterBook->name);
-        return;
-    }
-
-    printf("Yazari %s olan %s isimli kitap %d lira ile %s %s isimli musteriye satilacak.\n", iterBook->author, iterBook->name, iterBook->price, iterCustomer->name, iterCustomer->surname);
-    printf("Onaylamak icin 1, menuden cikmak icin 0'a basiniz: ");
-    scanf("%d", &choice);
-    
-    if(choice == 1) //kitabi id'si girilen musteriye satmak icin diger adimlara gecer.
-    {
-        printf("Musteri odemeyi nasil gerceklestirecek?\n");
-        printf("Bakiyedenen odenecekse 0, elden odenecekse 1'e basiniz: ");
-        scanf("%d", &paymentChoice);
-
-        if(paymentChoice == 0) //odemenin musterinin bakiyesinden dusulecegini belirtir.
-        {
-            if(iterCustomer->budget < iterBook->price) //musterinin bakiyesinin kitap icin yetersiz oldugunu gosterir.
-            {
-                printf("Musterinin bakiyesi yetersiz. Ana menuye donuluyor.\n");
-                return;
-            }
-
-            iterCustomer->budget -= iterBook->price; //kitabin fiyati musterinin bakiyesinden dusulur.
-            iterBook->amount--;
-            printf("Kitap basariyla satilmistir.\n");
-            linkSoldBooks(idCurrentPersonel,iterCustomer->id, iterBook->id); //kitap personelin satisina eklenir.
-            saveBookChanges();
-            saveCustomerChanges();
-            saveSoldBooks();
-        }
-
-        if(paymentChoice == 1) //odeme elden yapilacagi icin diger adimlara gecer.
-        {
-            printf("Kasaya giren para miktari: ");
-            scanf("%d", &moneyAmount);
-
-            if(moneyAmount < iterBook->amount) //musterinin verdigi miktarin yetersiz oldugunu belirtir.
-            {
-                printf("Kasaya giren miktar kitabin degerinden daha az.\n");
-                printf("Geri kalan miktar bakiyeden dusulecekse 1'e, ana menuye donmek icin 0'a basiniz: ");
-                scanf("%d", &choice2);
-                //musteriden alinan miktar yetersiz olsa dahi geri kalan miktarin musterinin bakiyesinden dusulebilir.
-
-                if(choice2 == 1) //geri kalan miktar bakiyeden dusulecektir.
-                {
-                    moneyAmount -= iterBook->price;
-                    moneyAmount *= -1;
-
-                    if(iterCustomer->budget < moneyAmount) //bakiye geri kalan miktar icin yetersizdir.
-                    {
-                        printf("Bakiye yetersiz. Ana menuye donuluyor.\n");
-                        return;
-                    }
-
-                    iterCustomer->budget -= moneyAmount; //musterinin bakiyesi guncellenir.
-                    iterBook->amount--;
-                    printf("Kitap basariyla satilmistir.\n");
-                    linkSoldBooks(idCurrentPersonel,iterCustomer->id, iterBook->id); //kitap personelin satisina eklenir.
-                    saveBookChanges();
-                    saveCustomerChanges();
-                    saveSoldBooks();
-                }
-            }
-
-            if(moneyAmount > iterBook->amount) //musterinin verdigi miktar yeterli oldugundan para ustu odenir ve satis tamamlanir.
-            {
-                printf("Kitap basariyla satilmistir.\n");
-                iterBook->amount--;
-                linkSoldBooks(idCurrentPersonel,iterCustomer->id, iterBook->id); //kitap personelin satisina eklenir.
-                printf("Para ustu %d lira odenmistir.\n", moneyAmount-iterBook->price);
-                saveBookChanges();
-                saveCustomerChanges();
-                saveSoldBooks();
-            }
-        }
-    }
-    printf("Ana menuye donuluyor.\n");
-}
-
 void addBook() //kitaplarin bulundugu linked list'e kitap ekler.
 {
     int id, price, amount, pageNumber;
@@ -630,57 +457,22 @@ void addCustomer() //musterilerin bulundugu linked list'e yeni bir musteri ekler
     saveCustomerChanges();
 }
 
-void displayCustomersBooks() //girilecek musterinin id'sinden aldigi tum kitaplari listeler.
+void addPersonel()
 {
     int id;
-    bool isWritten = false;
-    displayCustomers();
-    printf("Hangi musterinin aldigi kitaplari listelemek istiyorsunuz? (cikmak icin 0'a basiniz)\n");
-    printf("ID: ");
-    scanf("%d", &id);
-
-    if(id == 0) return;
-
-    customerPtr *iterCustomer = customerNode;
-
-    iterCustomer = isCustomerValid(id);
-
-    if(iterCustomer == NULL) //girilmis olan musterinin olmadigini soyler ve ana menuye doner.
-    {
-        printf("Girmis oldugunuz musteri ID'si hatalidir.\n");
-        return;
-    }
-
+    char name[SIZE], surname[SIZE];
+    printf("Olusturulacak personelin adini bosluk birakmadan giriniz: ");
+    scanf("%s", name);
+    printf("Olusturulacak personelin soyadini bosluk birakmadan giriniz: ");
+    scanf("%s", surname);
     personelPtr *iterPersonel = personelNode;
-    booksPtr *iterBook;
-
-    while(iterPersonel != NULL) //her personeli tarayarak hangisinin bu musteriye satis yaptigindan kitaplar kontrol edilir.
-    {
-        soldBooksPtr *iterSoldBook = iterPersonel->soldBooksList;
-        if(iterSoldBook != NULL)
-        {
-            while(iterSoldBook != NULL)
-            {
-                if(iterSoldBook->idCustomer == iterCustomer->id)
-                {
-                    if(isWritten == false) //egerki musteri kitap almissa 1 defaya mahsus calisir ve basligi yazdirir.
-                    {
-                        printf("%s %s tarafindan alinan kitaplar:\n", iterCustomer->name, iterCustomer->surname);
-                        isWritten = true;
-                    }
-                    iterBook = isBookValid(iterSoldBook->idSoldBook); //alinmis kitabin id'si fonksiyona gonderilerek kitabin tum bilgileri node seklinde dondurulur.
-                    printf("ID: %d, Kitap adi: %s, Yazar adi: %s, Yayin evi: %s, Fiyat: %d, Sayfa sayisi: %d\n", iterBook->id, iterBook->name, iterBook->author, iterBook->publisher, iterBook->price, iterBook->pageNumber);
-                }
-                iterSoldBook = iterSoldBook->next;
-            }
-        }
+    while(iterPersonel->next != NULL)
         iterPersonel = iterPersonel->next;
-    }
-
-    if(isWritten == false) //daha once yazdirilip true degere dondurulmediginden musterinin herhangi bir kitap almadigi anlasilir.
-    {
-        printf("%s %s herhangi bir kitap almamistir.\n", iterCustomer->name, iterCustomer->surname);
-    }
+    
+    id = iterPersonel->id + 1;
+    linkPersonels(id, name, surname);
+    printf("%s %s isimli personel basariyla olusturulmustur.\n", name, surname);
+    savePersonelChanges();
 }
 
 void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
@@ -790,7 +582,7 @@ void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
                 continue;
             
             case 'q': //ana menuye donus
-                return;
+                continue;
             
             default:
                 break;
@@ -804,7 +596,7 @@ void updateCustomerData() //musterilerin bilgilerini gunceller.
     char choice, name[SIZE], surname[SIZE];
 
     displayCustomers();
-    printf("Bilgilerini guncellemek istediginiz musterinin bilgilerini giriniz: ");
+    printf("Bilgilerini guncellemek istediginiz kitabin bilgilerini giriniz: ");
     scanf("%d", &id);
     customerPtr *iter;
     
@@ -911,295 +703,4 @@ void searchForBookID() //girilen kitabin id'sine gore arama yapar.
 
     printf("Kitap listede bulundu.\n");
     printBook(iterBook); //kitabin bilgilerini bastirir.
-}
-
-bool isBookTakenByCustomer(customerPtr *iterCustomer, booksPtr *iterBook) //kitabin musteri tarafindan alinip alinmadigini kontrol eder.
-{
-    personelPtr *iterPersonel = personelNode;
-    soldBooksPtr *iterSoldBooks;
-
-    while(iterPersonel != NULL) //tum personellerin satisini kontrol eder.
-    {
-        soldBooksPtr *iterSoldBooks = iterPersonel->soldBooksList;
-
-        if(iterSoldBooks != NULL) //personelin satislarina bakar.
-        {
-            while(iterSoldBooks != NULL) //tum kitap satislarini gezer.
-            {
-                if(iterSoldBooks->idCustomer == iterCustomer->id && iterSoldBooks->idSoldBook == iterBook->id)
-                { //satilan kitap musteri id'si ile uyusuyordur, true deger dondurulur.
-                    soldBooksPtr *temp = iterSoldBooks;
-                    iterSoldBooks = iterSoldBooks->next;
-                    free(temp);
-                    return true;
-                }
-                if(iterSoldBooks->next->idCustomer == iterCustomer->id && iterSoldBooks->next->idSoldBook == iterBook->id)
-                {
-                    soldBooksPtr *temp = iterSoldBooks->next;
-                    iterSoldBooks->next = iterSoldBooks->next->next;
-                    free(temp);
-                    return true;
-                }
-                iterSoldBooks = iterSoldBooks->next;
-            }
-        }
-        iterPersonel = iterPersonel->next;
-    }
-    return false; //kitap musteriye satilmadigi icin false deger dondurulur.
-}
-
-void bookAcceptReturn() //kitap iadesi alir.
-{
-    int idCustomer, idBook;
-
-    customerPtr *iterCustomer = customerNode;
-    booksPtr *iterBook = booksNode;
-
-    printf("Kitap iade edecek musterinin ID'sini giriniz: ");
-    scanf("%d", &idCustomer);
-
-    iterCustomer = isCustomerValid(idCustomer); //musterinin database'de olup olmadigini kontrol eder. musteri varsa iterCustomer'a o musterinin bilgileri dondurulur.
-    if(iterCustomer == NULL)
-    {
-        printf("Girmis oldugunuz ID'ye ait herhangi bir musteri bulunamadi.\n");
-        return;
-    }
-
-    printf("Kitabi iade edecek musterinin bilgileri:\n");
-    printCustomer(iterCustomer); //musteri bilgileri bastirilir.
-
-    printf("Iade edilecek kitabin ID'sini giriniz:");
-    scanf("%d", &idBook);
-
-    iterBook = isBookValid(idBook); //kitabin olup olmadigini kontrol eder, yoksa NULL deger atanir, varsa bilgiler iterBook'a atanir.
-    if(iterBook == NULL)
-    {
-        printf("Girmis oldugunuz ID'ye ait herhangi bir kitap bulunamadi.\n");
-        return;
-    }
-    
-    if(isBookTakenByCustomer(iterCustomer, iterBook) == false)
-    {
-        printf("Girilen bilgiler uyusmuyor. '%s %s' isimli musteri '%s' isimli kitabi almamistir.\n", iterCustomer->name, iterCustomer->surname, iterBook->name);
-        return;
-    }
-
-    printf("Girmis oldugunuz ID'ye ait kitap bilgileri:\n");
-    printBook(iterBook); //kitap bilgileri bastirilir.
-    printf("'%s' isimli kitap iade alinmistir. Iade ucreti olan '%d' lira musterinin bakiyesine eklenmistir.\n", iterBook->name, iterBook->price);
-    printf("Bakiye guncellenmeden onceki durum: '%d' lira\n", iterCustomer->budget);
-    iterCustomer->budget += iterBook->price; //iade ucreti musterinin bakiyesine yansitilir.
-    iterBook->amount++; //kitap iade alindigindan kitabin adedi 1 arttirilir.
-    printf("Bakiye guncellendikten sonraki durum: '%d' lira\n", iterCustomer->budget);
-    printf("Iade islemi tamamlanmistir.\nAna menuye donuluyor.\n");
-    saveCustomerChanges();
-    saveSoldBooks();
-    saveBookChanges();
-}
-
-void saveCustomerChanges()
-{
-    FILE *customerText = fopen("customer.txt", "w");
-    customerPtr *iterCustomers = customerNode;
-
-    while(iterCustomers != NULL)
-    {
-        fprintf(customerText, "%d %s %s %d\n", iterCustomers->id, iterCustomers->name, iterCustomers->surname, iterCustomers->budget);
-        iterCustomers = iterCustomers->next;
-    }
-    fclose(customerText);
-}
-
-void saveBookChanges()
-{
-    FILE *bookText = fopen("books.txt", "w");
-    booksPtr *iterBooks = booksNode;
-    
-    while(iterBooks != NULL)
-    {
-        fprintf(bookText, "%d %s %s %s %d %d %d\n", iterBooks->id, iterBooks->name, iterBooks->author, iterBooks->publisher, iterBooks->price, iterBooks->amount, iterBooks->pageNumber);
-        iterBooks = iterBooks->next;
-    }
-    fclose(bookText);
-}
-
-void savePersonelChanges()
-{
-    FILE *personelText = fopen("personel.txt", "w");
-    personelPtr *iterPersonel = personelNode;
-
-    while(iterPersonel != NULL)
-    {
-        fprintf(personelText, "%d %s %s\n", iterPersonel->id, iterPersonel->name, iterPersonel->surname);
-        iterPersonel = iterPersonel->next;
-    }
-    fclose(personelText);
-}
-
-void saveSoldBooks()
-{
-    FILE *soldBookText = fopen("soldBooks.txt", "w");
-    personelPtr *iterPersonel = personelNode;
-
-    while(iterPersonel != NULL)
-    {
-        if(iterPersonel->soldBooksList != NULL)
-        {
-            soldBooksPtr *iterSoldBook = iterPersonel->soldBooksList;
-            while(iterSoldBook != NULL)
-            {
-                fprintf(soldBookText, "%d %d %d\n", iterPersonel->id, iterSoldBook->idCustomer, iterSoldBook->idSoldBook);
-                iterSoldBook = iterSoldBook->next;
-            }
-        }
-        iterPersonel = iterPersonel->next;
-    }
-    fclose(soldBookText);
-}
-
-void addPersonel()
-{
-    int id;
-    char name[SIZE], surname[SIZE];
-    printf("Olusturulacak personelin adini bosluk birakmadan giriniz: ");
-    scanf("%s", name);
-    printf("Olusturulacak personelin soyadini bosluk birakmadan giriniz: ");
-    scanf("%s", surname);
-    personelPtr *iterPersonel = personelNode;
-    while(iterPersonel->next != NULL)
-        iterPersonel = iterPersonel->next;
-    
-    id = iterPersonel->id + 1;
-    linkPersonels(id, name, surname);
-    printf("%s %s isimli personel basariyla olusturulmustur.\n", name, surname);
-    savePersonelChanges();
-}
-
-int main()
-{
-    int idPersonel, choice, choice2, changeChoice, adminOrPersonel;
-
-    setlocale(LC_ALL, "Turkish");
-    booksText();
-    customerText();
-    personelText();
-    soldBooksText();
-
-    while(1)
-    {
-    printf("Kitap satis sistemine hosgeldiniz.\n");
-    printf("1- Yonetici olarak giris yap\n2- Personel olarak giris yap\n");
-    printf("Islem: ");
-    scanf("%d", &adminOrPersonel);
-
-    
-    switch (adminOrPersonel)
-    {
-        case 1:
-            printf("1- Musteri ekle\n2- Musteri bilgilerini guncelle\n3- Kitap ekle\n4- Kitap bilgilerini guncelle\n");
-            printf("5- Personel ekle\n6- Personellerin satislarini listele\n");
-            printf("7- Giris ekranina don\n8- Cikis yap\n");
-            printf("Islem: ");
-            scanf("%d", &choice2);
-            switch (choice2)
-            {
-                case 1:
-                    addCustomer();
-                    break;
-
-                case 2:
-                    updateCustomerData();
-                    break;
-
-                case 3:
-                    addBook();
-                    break;
-
-                case 4:
-                    updateBookData();
-                    break;
-
-                case 5:
-                    addPersonel();
-
-                case 6:
-                    displaySoldBooks();
-                    break;
-                
-                case 7:
-                    continue;
-
-                case 8:
-                    return;
-
-                default:
-                    break;
-            }
-        break;
-
-        case 2:
-            displayPersonels();
-            printf("Yukarida listelenen personellerden hangisi ile islem yapacaksiniz?\n");
-            printf("Personel ID: ");
-            scanf("%d", &idPersonel);
-
-            while(isPersonelValid(idPersonel) == 1)
-            {
-                printf("\n1- Musterileri listele\n2- Kitaplari listele\n3- Personelleri listele\n");
-                printf("4- Kitap satisi yap\n");
-                printf("5- Musterinin aldigi kitaplari listele\n");
-                printf("6- Isme gore kitap ara\n7- ID'ye gore kitap ara\n8- Kitap iadesi al\n");
-                printf("9- Giris ekranina don\n10- Cikis yap\n");
-                printf("Yapmak istediginiz islem: ");
-                scanf("%d", &choice);
-
-                switch (choice)
-                {
-                    case 1:
-                        displayCustomers();
-                        continue;
-
-                    case 2:
-                        displayBooks();
-                        continue;
-
-                    case 3:
-                        displayPersonels();
-                        continue;
-                    
-                    case 4:
-                        sellBook(idPersonel);
-                        continue;
-                    
-                    case 5:
-                        displayCustomersBooks();
-                        continue;
-                    
-                    case 6:
-                        searchForBookName();
-                        continue;
-                    
-                    case 7:
-                        searchForBookID();
-                        continue;
-                    
-                    case 8:
-                        bookAcceptReturn();
-                        continue;
-                    
-                    case 9:
-                        break;
-                    
-                    case 10:
-                        return;
-
-                    default:
-                        break;
-                }
-                break;
-            }
-            continue;
-    }
-    }
-    return 0;
 }

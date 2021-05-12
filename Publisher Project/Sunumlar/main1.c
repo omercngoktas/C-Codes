@@ -790,7 +790,7 @@ void updateBookData() //kitap bilgilerinin guncellenecegi fonksiyon.
                 continue;
             
             case 'q': //ana menuye donus
-                return;
+                continue;
             
             default:
                 break;
@@ -804,7 +804,7 @@ void updateCustomerData() //musterilerin bilgilerini gunceller.
     char choice, name[SIZE], surname[SIZE];
 
     displayCustomers();
-    printf("Bilgilerini guncellemek istediginiz musterinin bilgilerini giriniz: ");
+    printf("Bilgilerini guncellemek istediginiz kitabin bilgilerini giriniz: ");
     scanf("%d", &id);
     customerPtr *iter;
     
@@ -968,7 +968,7 @@ void bookAcceptReturn() //kitap iadesi alir.
     printf("Kitabi iade edecek musterinin bilgileri:\n");
     printCustomer(iterCustomer); //musteri bilgileri bastirilir.
 
-    printf("Iade edilecek kitabin ID'sini giriniz:");
+    printf("İade edilecek kitabin ID'sini giriniz:");
     scanf("%d", &idBook);
 
     iterBook = isBookValid(idBook); //kitabin olup olmadigini kontrol eder, yoksa NULL deger atanir, varsa bilgiler iterBook'a atanir.
@@ -986,12 +986,12 @@ void bookAcceptReturn() //kitap iadesi alir.
 
     printf("Girmis oldugunuz ID'ye ait kitap bilgileri:\n");
     printBook(iterBook); //kitap bilgileri bastirilir.
-    printf("'%s' isimli kitap iade alinmistir. Iade ucreti olan '%d' lira musterinin bakiyesine eklenmistir.\n", iterBook->name, iterBook->price);
+    printf("'%s' isimli kitap iade alinmistir. İade ucreti olan '%d' lira musterinin bakiyesine eklenmistir.\n", iterBook->name, iterBook->price);
     printf("Bakiye guncellenmeden onceki durum: '%d' lira\n", iterCustomer->budget);
     iterCustomer->budget += iterBook->price; //iade ucreti musterinin bakiyesine yansitilir.
     iterBook->amount++; //kitap iade alindigindan kitabin adedi 1 arttirilir.
     printf("Bakiye guncellendikten sonraki durum: '%d' lira\n", iterCustomer->budget);
-    printf("Iade islemi tamamlanmistir.\nAna menuye donuluyor.\n");
+    printf("İade islemi tamamlanmistir.\nAna menuye donuluyor.\n");
     saveCustomerChanges();
     saveSoldBooks();
     saveBookChanges();
@@ -1085,21 +1085,19 @@ int main()
     personelText();
     soldBooksText();
 
-    while(1)
-    {
     printf("Kitap satis sistemine hosgeldiniz.\n");
     printf("1- Yonetici olarak giris yap\n2- Personel olarak giris yap\n");
-    printf("Islem: ");
+    printf("İslem: ");
     scanf("%d", &adminOrPersonel);
 
-    
+    while(1)
+    {
     switch (adminOrPersonel)
     {
         case 1:
             printf("1- Musteri ekle\n2- Musteri bilgilerini guncelle\n3- Kitap ekle\n4- Kitap bilgilerini guncelle\n");
             printf("5- Personel ekle\n6- Personellerin satislarini listele\n");
-            printf("7- Giris ekranina don\n8- Cikis yap\n");
-            printf("Islem: ");
+            printf("İslem: ");
             scanf("%d", &choice2);
             switch (choice2)
             {
@@ -1125,12 +1123,6 @@ int main()
                 case 6:
                     displaySoldBooks();
                     break;
-                
-                case 7:
-                    continue;
-
-                case 8:
-                    return;
 
                 default:
                     break;
@@ -1139,7 +1131,7 @@ int main()
 
         case 2:
             displayPersonels();
-            printf("Yukarida listelenen personellerden hangisi ile islem yapacaksiniz?\n");
+            printf("Yukarida listelenen personellerden hangisi ile islem yapacasiniz?\n");
             printf("Personel ID: ");
             scanf("%d", &idPersonel);
 
@@ -1148,8 +1140,7 @@ int main()
                 printf("\n1- Musterileri listele\n2- Kitaplari listele\n3- Personelleri listele\n");
                 printf("4- Kitap satisi yap\n");
                 printf("5- Musterinin aldigi kitaplari listele\n");
-                printf("6- Isme gore kitap ara\n7- ID'ye gore kitap ara\n8- Kitap iadesi al\n");
-                printf("9- Giris ekranina don\n10- Cikis yap\n");
+                printf("6- İsme gore kitap ara\n7- ID'ye gore kitap ara\n8- Kitap iadesi al\n");
                 printf("Yapmak istediginiz islem: ");
                 scanf("%d", &choice);
 
@@ -1157,48 +1148,41 @@ int main()
                 {
                     case 1:
                         displayCustomers();
-                        continue;
+                        break;
 
                     case 2:
                         displayBooks();
-                        continue;
+                        break;
 
                     case 3:
                         displayPersonels();
-                        continue;
+                        break;
                     
                     case 4:
                         sellBook(idPersonel);
-                        continue;
+                        break;
                     
                     case 5:
                         displayCustomersBooks();
-                        continue;
+                        break;
                     
                     case 6:
                         searchForBookName();
-                        continue;
+                        break;
                     
                     case 7:
                         searchForBookID();
-                        continue;
+                        break;
                     
                     case 8:
                         bookAcceptReturn();
-                        continue;
-                    
-                    case 9:
                         break;
-                    
-                    case 10:
-                        return;
 
                     default:
                         break;
                 }
-                break;
             }
-            continue;
+            break;
     }
     }
     return 0;
