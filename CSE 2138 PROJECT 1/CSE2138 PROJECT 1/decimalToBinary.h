@@ -1,0 +1,1 @@
+void convertDecimalToBinary(int number, char binaryFormOfNumber[]);
