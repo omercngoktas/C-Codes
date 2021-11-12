@@ -10,7 +10,7 @@ int readFile(char fileName[], char inputs[MAX_SIZE][MAX_SIZE])
     if(inputFile == NULL)
     {
         printf("Error: %s does not exist.\n", fileName);
-        return;
+        return -1;
     }
 
     /* creating char array list to use it later. */

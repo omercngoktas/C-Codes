@@ -7,6 +7,7 @@
 #define BITS_SIZE 32
 #define FLOAT_SIZE 32
 #include "binaryToHex.h"
+#include "rounding.h"
 #include <math.h>
 
 void determineDataType(char inputsArray[][MAX_SIZE], int arraySize, int floatPointSize);
@@ -206,6 +207,58 @@ int floatingPointNumber(char inputNumber[], int floatPointSize)
 
     char *tempFractionPart = floatingPointRepresentInBinary;
     tempFractionPart++;
+
+    int isExit = -1, halfCheckIndex = fractionBits, lengthFraction = strlen(tempFractionPart);
+    if(lengthFraction > fractionBits)
+    {
+        for(halfCheckIndex; halfCheckIndex < lengthFraction; halfCheckIndex++)
+        {
+            if(tempFractionPart[halfCheckIndex] == '1')
+                isExit++;
+        }
+    }
+    if(isExit > 0)
+        roundFractionToUp(tempFractionPart, fractionBits);
+    
+    if(lengthFraction < fractionBits)
+    {
+        int indexToAddZeroz = lengthFraction;
+        for(indexToAddZeroz; indexToAddZeroz < fractionBits; indexToAddZeroz++)
+        tempFractionPart[indexToAddZeroz] = '0';
+    }
+
+    if(floatPointSize == 3)
+    {
+        strcat(tempFractionPart, '\0');
+        tempFractionPart[13] = '\0';
+    }
+    else if(floatPointSize == 4)
+    {
+        strcat(tempFractionPart, "0000000");
+        tempFractionPart[19] = '\0';
+    }
+    char expBinary[BITS_SIZE];
+    convertDecimalToBinary(exp, expBinary);
+    expBinary[eBits] = '\0';
+    char ieeeFormat[BITS_SIZE];
+    if(rawNumber < 0)
+    {
+        ieeeFormat[0] = '1';
+    }
+    else if(rawNumber >= 0)
+    {
+        ieeeFormat[0] = '0';
+    }
+    ieeeFormat[1] = '\0';
+    strcat(ieeeFormat, expBinary);
+    strcat(ieeeFormat, tempFractionPart);
+
+    for(i = 0; i < BITS_SIZE; i++)
+    {
+        if(ieeeFormat[i] == '\0')
+            break;
+        printf("%c", ieeeFormat[i]);
+    }
 
 }
 

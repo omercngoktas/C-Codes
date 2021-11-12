@@ -1,4 +1,3 @@
-/* Nesrin Simsek 150119664 - Elif Nur Kemiksiz 100217006 - Ozge Saltan 150517059 */
 
 #include <stdio.h>
 #include <string.h>
