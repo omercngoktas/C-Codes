@@ -10,13 +10,13 @@
 #include "rounding.h"
 #include <math.h>
 
-void determineDataType(char inputsArray[][MAX_SIZE], int arraySize, int floatPointSize);
+void determineDataType(char inputsArray[][MAX_SIZE], int arraySize, int floatPointSize, int intSize);
 int floatingPointNumber(char inputNumber[], int floatPointSize);
 int unsignedNumber(char inputNumber[]);
 int signedNumber(char inputNumber[]);
 
 /* determining data type of input */
-void determineDataType(char inputsArray[][MAX_SIZE], int arraySize, int floatPointSize)
+void determineDataType(char inputsArray[][MAX_SIZE], int arraySize, int floatPointSize, int intSize)
 {
     int i, j, control, isSent;
     int digitNumber;
@@ -73,7 +73,8 @@ int floatingPointNumber(char inputNumber[], int floatPointSize)
     char tempDecimalPart[MAX_SIZE], decimalPartBinary[BITS_SIZE], tempBinary[BITS_SIZE];
     char fractionPartBinary[BITS_SIZE];
     float fractionPart;
-    printf("float: %s\n", inputNumber);
+    printf("\n-----------------------------------------------------------");
+    printf("\nFloat number (decimal rep.):\t%s\n", inputNumber);
     /* assigning decimal part of float number. */
     for(i = 0; i < MAX_SIZE; i++)
     {
@@ -253,6 +254,7 @@ int floatingPointNumber(char inputNumber[], int floatPointSize)
     strcat(ieeeFormat, expBinary);
     strcat(ieeeFormat, tempFractionPart);
 
+    printf("\nieeeFormat: ");
     for(i = 0; i < BITS_SIZE; i++)
     {
         if(ieeeFormat[i] == '\0')
@@ -264,39 +266,39 @@ int floatingPointNumber(char inputNumber[], int floatPointSize)
 
 int unsignedNumber(char inputNumber[])
 {
-    //unsigned inputUnsigned = strtoul(inputNumber, &temp, 10);
     int inputUnsigned = atoi(inputNumber), i;
     char unsignedBinary[BITS_SIZE];
     char hexaDecimalRep[BITS_SIZE];
-    printf("\n************************************\n");
-    printf("unsigned: %du\n", inputUnsigned);
+
+    printf("\n-----------------------------------------------------------");
+    printf("Unsigned number (dec. rep.):\t%du\n", inputUnsigned);
+
+    printf("Unsigned number (binary rep.):\t");
 
     convertDecimalToBinary(inputUnsigned, unsignedBinary);
     for(i = 0; i < BITS_SIZE; i++)
     {
         printf("%c", unsignedBinary[i]);
     }
-    printf("\nhex: ");
+    printf("\nUnsigned number (hex. rep.):\t");
     convertBinToHex(unsignedBinary, hexaDecimalRep, BITS_SIZE);
     for(i = 0; i < 8; i++)
     {
         printf("%c", hexaDecimalRep[i]);
     }
-    printf("\n************************************\n");
 }
 
 int signedNumber(char inputNumber[])
 {
     int inputSigned = atoi(inputNumber);
     char signedBinary[BITS_SIZE];
-    printf("\n---------------------------------------\n");
-    printf("signed number: %d\n", inputSigned);
+    printf("\n-----------------------------------------------------------");
+    printf("Signed number (dec. rep.):\t%d\n", inputSigned);
+    printf("Signed number (binary rep.):\t");
     convertDecimalToBinary(inputSigned, signedBinary);
     int i;
     for(i = 0; i < 8; i++)
     {
         printf("%c", signedBinary[i]);
     }
-    printf("\n---------------------------------------\n");
-
 }

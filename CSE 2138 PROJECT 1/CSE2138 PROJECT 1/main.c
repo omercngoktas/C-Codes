@@ -3,6 +3,7 @@
 #include "readFile.h"
 #include "determineDataType.h"
 #define MAX_SIZE 256
+#define INT_SIZE 2 /* 2 bytes will be used for both signed and unsigned integers */
 
 int main()
 {
@@ -19,7 +20,7 @@ int main()
     scanf("%s", fileName);*/
     size = readFile("input.txt", inputs);
     
-    determineDataType(inputs, size, floatSize);
+    determineDataType(inputs, size, floatSize, INT_SIZE);
 
 
 
