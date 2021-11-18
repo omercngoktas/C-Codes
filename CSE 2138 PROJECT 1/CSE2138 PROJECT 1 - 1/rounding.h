@@ -1,0 +1,1 @@
+void roundFractionToUp(char *fractionPart, int fractionBit);

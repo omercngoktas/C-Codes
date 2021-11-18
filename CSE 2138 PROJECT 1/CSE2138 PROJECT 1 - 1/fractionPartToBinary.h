@@ -1,0 +1,1 @@
+void floatingPointToBinary(float floatPart, char floatPartBinary[]);

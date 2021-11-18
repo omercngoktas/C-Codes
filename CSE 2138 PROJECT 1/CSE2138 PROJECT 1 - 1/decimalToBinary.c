@@ -4,7 +4,7 @@
 #define MAX_SIZE 256
 #define BITS_SIZE 32
 
-void convertDecimalToBinary(int number, char binaryFormOfNumber[])
+void convertDecimalToBinary(int number, char binaryFormOfNumber[], int intSize)
 {
 	int tempNumber = number, i = 0, displayMask = 1 << (BITS_SIZE-1), k = 0, j = BITS_SIZE - 1;
     char currentBit;

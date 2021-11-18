@@ -88,7 +88,9 @@ void fractionToBinary(char fractionBinary[], float fractionPartOfFloat){
 }
 
 // rounds the number up by adding 1 
-void roundUp(char *fractionPart, int fractionBit) {
+void roundUp(char *fractionPart, int fractionBit)
+{
+	printf("fractionBit: %d\n", fractionBit);
 	int lastIndexToRound = fractionBit-1;
 	for(lastIndexToRound; lastIndexToRound >= 0; lastIndexToRound--){
 		if (fractionPart[lastIndexToRound] == '1') fractionPart[lastIndexToRound] = '0'; // if the bit is 1 converts it to 0 
@@ -121,14 +123,20 @@ void floatToIEEE(char lineInputTxt[], char ieeeFormat[], int size){
     // binary version of integer part without unnecessary zeros at the beginning
 	for(j = i; j < 32; j++) 
 		integerBinary[bitNumberOfDecimalPart++] = binaryNumWithZeros[j];
-	integerBinary[bitNumberOfDecimalPart] = '\0';
 
+	integerBinary[bitNumberOfDecimalPart] = '\0';
+	printf("\nbitNumberOfDecimalPart: %d\n",bitNumberOfDecimalPart);
 	char fractionBinary[32]; //array for binary version of fraction part
-	fractionToBinary(fractionBinary, fractionPartOfFloat);	
+	fractionToBinary(fractionBinary, fractionPartOfFloat);
+	printf("\nfractionPartBinary: %s\n", fractionBinary);
 
 	char floatBinaryRepresent[64]; // array for binary version of whole float number
+	
 	strcpy(floatBinaryRepresent, integerBinary);
 	strcat(floatBinaryRepresent, fractionBinary);
+	printf("\nintegerBinary: %s\nfractionBinary: %s\n", integerBinary, fractionBinary);
+	printf("floatBinaryRep: %s\n", floatBinaryRepresent);
+
 
 	// calculates exponent part of floating point represent as a decimal value
 	int fractionBit, expBit, exp, e = bitNumberOfDecimalPart - 1;
@@ -138,29 +146,37 @@ void floatToIEEE(char lineInputTxt[], char ieeeFormat[], int size){
 			/* 1 byte equals to 8 bits, 4 bits for exponent part,
 			1 bit for signing bit and rest of the 3 bits for fraction*/
 			fractionBit = 4;
+
 			expBit = 3;
+
 			exp = e + pow(2, (expBit-1)) - 1;		
 			break;
 		case 2:
 			fractionBit = 7;
+
 			expBit = 8;
+
 			exp = e + pow(2, (expBit-1)) - 1;
 			break;
 		case 3:
 			fractionBit = 12;
+
 			expBit = 10;
+
 			exp = e + pow(2, (expBit-1)) - 1;		
 			break;
 		case 4:
 			fractionBit = 12;
+
 			expBit = 12;
+
 			exp = e + pow(2, (expBit-1)) - 1;		
 			break;
 	}
-
+	printf("floatBinaryRepresent: %s\n", floatBinaryRepresent);
 	char *fractionPart = floatBinaryRepresent;
 	fractionPart++; // drops the first bit(which is one) of binary float number so that obtains main fraction part of IEEE format
-	
+	printf("fractionPart:\t%s\n", fractionPart);
 	// determines whether the part to be dropped to round the number is greater than half or not
 	int oneExistCheck = -1, halfCheckIndex = fractionBit, lengthOfFraction = strlen(fractionPart);
 	if(lengthOfFraction > fractionBit) {
@@ -168,23 +184,27 @@ void floatToIEEE(char lineInputTxt[], char ieeeFormat[], int size){
 			if(fractionPart[halfCheckIndex] == '1') oneExistCheck += 1;
 		}
 	}
+	printf("before round:\t%s\n", fractionPart);
+
 	if(oneExistCheck > 0) roundUp(fractionPart, fractionBit); /* if first bit of the part after the part which will be rounded is 1 and it has 1's more than one, 
 	                                                          this means that part is greater than half. so the number should be rounded up */
-	
+	printf("Rounded:\t%s", fractionPart);
 	// if the binary fraction has less bits then the fraction part of IEEE format, adds zeros to the end		
 	if(lengthOfFraction < fractionBit) {
 		int indexToAddZeros = lengthOfFraction;
 		for(indexToAddZeros; indexToAddZeros < fractionBit; indexToAddZeros++) fractionPart[indexToAddZeros] = '0';
 		fractionPart[indexToAddZeros] = '\0';	
 	}
+	printf("\nAfter adding zeroz:\t%s", fractionPart);
 	
-	// if the byte is 3, it is constant that 12 bits will be the fraction part of IEEE format, so that adds a zero to complete the binary fraction to 13 bits
+	// if the byte is 3, it is constant that 12 bits will be the fraction part of IEEE format,
+	// so that adds a zero to complete the binary fraction to 13 bits
 	if(size == 3) {
 		strcat(fractionPart, "0");
-		fractionPart[13] = '\0';
+		fractionPart[15] = '\0';
     }else if (size == 4) { // if the byte is 4, adds seven zeros to complete the binary fraction to 19 bits
 		strcat(fractionPart, "0000000");
-		fractionPart[19] = '\0';
+		fractionPart[21] = '\0';
 	}	
 	 
 	char expBinary[12];
