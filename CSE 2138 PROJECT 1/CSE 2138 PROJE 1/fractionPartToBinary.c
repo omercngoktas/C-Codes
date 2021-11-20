@@ -4,38 +4,39 @@
 #include <math.h>
 #define MAX_SIZE 256
 
-void floatingPointToBinary(float floatPart, char floatPartBinary[])
+/* converting fraction part of number to binary number */
+void floatingPointToBinary(float fractionPart, char fractionPartBinary[])
 {
 	int i = 0, count = 0;
 
-	while(floatPart != 1)
+	while(fractionPart != 1)
 	{
-		if(floatPart == 0)
+		if(fractionPart == 0)
 		{
-			strcpy(floatPartBinary, "0");
-			floatPartBinary[1] = '\0';
+			strcpy(fractionPartBinary, "0");
+			fractionPartBinary[1] = '\0';
 			break;
 		}
-		else if(floatPart > 1)
+		else if(fractionPart > 1)
 		{
-			floatPart--;
+			fractionPart--;
 		}
 		
-		floatPart = floatPart * 2;
+		fractionPart = fractionPart * 2;
 		
-		if(floatPart < 1)
+		if(fractionPart < 1)
 		{
-			floatPartBinary[count] = '0';
+			fractionPartBinary[count] = '0';
 			count++;
 		}
-		else if(floatPart > 1)
+		else if(fractionPart > 1)
 		{
-			floatPartBinary[count] = '1';
+			fractionPartBinary[count] = '1';
 			count++;
 		}
 		else
 		{
-			floatPartBinary[count] = '1';
+			fractionPartBinary[count] = '1';
 			count++;
 			break;
 		}
@@ -43,6 +44,6 @@ void floatingPointToBinary(float floatPart, char floatPartBinary[])
 	
 	if(count != 0)
 	{
-		floatPartBinary[count] = '\0';
+		fractionPartBinary[count] = '\0';
 	}
 }

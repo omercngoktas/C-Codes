@@ -1,0 +1,10 @@
+/*
+Ömercan Göktaş 150119671
+Muhammed Yusuf Şahin 150119790
+Berkan Korkmaz 150119623
+
+When compiling the c files, you can copy and paste these;
+
+gcc omercanGoktas_muhammedYusufSahin_berkanKorkmaz.c binaryToHex.c dataTypes.c decimalToBinary.c endianType.c fractionPartToBinary.c readFile.c roundingFractionPart.c writeToFile.c
+
+*/

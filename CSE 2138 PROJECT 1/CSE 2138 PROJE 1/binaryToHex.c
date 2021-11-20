@@ -5,6 +5,7 @@
 #define MAX_SIZE 256
 #define REP_ARRAY 8
 
+/* convertin binary number to hexadecimal number representation */
 void convertBinToHex(char binaryNumberRep[], char hexNumberRep[], int arraySize)
 {
 	int i = 1, j, v, exponentPart = 3, fourBits = 0,
