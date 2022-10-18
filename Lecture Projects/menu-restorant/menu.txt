@@ -1,0 +1,4 @@
+Mercimek_Corbasi 150 19.900000
+Tavuk_Doner 100 24.500000
+Et_Doner 100 49.500000
+Kofte 200 59.900000
