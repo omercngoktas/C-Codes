@@ -61,7 +61,7 @@ void dosyadanYazarEkle() {
 void dosyadanKitapEkle() {
     FILE* fp = fopen("Kitaplar.csv", "r");
     if(!fp) { perror("Kitaplar.csv dosyasi bulunamadi"); exit(0); }
-    char ISBN[13];
+    char ISBN[14];
     char kitapAdi[30];
     int kitapAdedi;
 
@@ -74,8 +74,25 @@ void dosyadanKitapEkle() {
         strcpy(ISBN, sp);
         sp = strtok(NULL, ",");
         kitapAdedi = atoi(sp);
-        ISBN[13]='\0';
         printf("Kitap adi: %s ISBN: %s Kitap adedi: %d\n", kitapAdi, ISBN, kitapAdedi);
+    }
+}
+
+void dosyadanKitapYazarEkle() {
+    FILE* fp = fopen("KitapYazar.csv", "r");
+    if(!fp) { perror("KitapYazar.csv dosyasi bulunamadi"); exit(0); }
+    int yazarID;
+    char ISBN[14];
+
+    char line[100];
+
+    char* sp;
+    while(fgets(line, 100, fp) != NULL) {
+        sp = strtok(line, ",");
+        strcpy(ISBN, sp);
+        sp = strtok(NULL, ",");
+        yazarID = atoi(sp);
+        printf("Kitap ISBN: %s Yazar ID: %d\n", ISBN, yazarID);
     }
 }
 
@@ -90,5 +107,6 @@ int main() {
     dosyadanOgrenciEkle();
     dosyadanYazarEkle();
     dosyadanKitapEkle();
+    dosyadanKitapYazarEkle();
     return 0;
 }
