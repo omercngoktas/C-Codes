@@ -1,0 +1,2 @@
+programınızı "KitapOdunc.csv" hariç bu dosyalar ile başlatabilirsiniz. Bu dosyalar programdaki işlemlere göre güncellenmelidir.
+KitapOdunc.csv ise başlangıçta boş olup program çalışıyorken doldurulabilir. Aşağıdaki KitapOdunc.csv dosyası format bilgisi için verilmiştir
