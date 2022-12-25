@@ -128,9 +128,7 @@ struct Kitap* kitapEkle(struct Kitap* kitaplar, char kitapAdi[], char ISBN[], in
     yeniKitap->adet = kitapAdedi;
     if(kitaplar == NULL) {
         yeniKitap->next = NULL;
-        // yeniKitap->head = (struct KitapOrnek*) malloc(sizeof(struct KitapOrnek));
         yeniKitap->head = kitapOrnegiEkle(ISBN, kitapAdedi);
-        // printf("Degerler: %s %s\n", yeniKitap->head->EtiketNo, yeniKitap->head->Durum);
         return yeniKitap;
     }
     temp = kitaplar;
@@ -482,12 +480,12 @@ void tarihBilgisiGoruntule(struct Tarih tarihBilgisi) {
 void ogrenciBilgileriniGoruntule(struct Ogrenci* ogrenci, struct KitapOdunc* kitapOduncler) {
     printf("ID: %s\tAd: %s\tSoyad: %s\tPuan: %d\n", ogrenci->ogrID, ogrenci->ad, ogrenci->soyad, ogrenci->puan);
     struct KitapOdunc* tempKitapOdunc = kitapOduncler;
-    while(kitapOduncler != NULL) {
-        if(strcmp(kitapOduncler->ogrID, ogrenci->ogrID) == 0) {
-            printf("Alinan kitabin etiket numarasi: %s\tYapilan islem tipi: %d\tIslem tarihi: ", kitapOduncler->EtiketNo, kitapOduncler->islemTipi);
-            tarihBilgisiGoruntule(kitapOduncler->islemTarihi);
+    while(tempKitapOdunc != NULL) {
+        if(strcmp(tempKitapOdunc->ogrID, ogrenci->ogrID) == 0) {
+            printf("Alinan kitabin etiket numarasi: %s\tYapilan islem tipi: %d\tIslem tarihi: ", tempKitapOdunc->EtiketNo, tempKitapOdunc->islemTipi);
+            tarihBilgisiGoruntule(tempKitapOdunc->islemTarihi);
         }
-        kitapOduncler = kitapOduncler->next;
+        tempKitapOdunc = tempKitapOdunc->next;
     }
 }
 
@@ -554,7 +552,7 @@ void raftakiKitaplariListele(struct Kitap* kitaplar) {
     }
 }
 
-struct Kitap* kitapBilgileriGuncelle(struct Kitap* kitaplar) {
+struct Kitap* kitapBilgileriGuncelle(struct Kitap* kitaplar, struct KitapYazar *kitapYazarlar, int numberOfLines) {
     struct Kitap* temp = kitaplar;
     char guncellenecekISBN[14];
     char yeniKitapAdi[31];
@@ -565,24 +563,24 @@ struct Kitap* kitapBilgileriGuncelle(struct Kitap* kitaplar) {
     scanf (" %[^\n]%*c", guncellenecekISBN);
     while(temp != NULL) {
         if(strcmp(temp->ISBN, guncellenecekISBN) == 0) {
-            printf("1- Kitap adi guncelle\n2- Kitap ISBN guncelle\nSecim: ");
+            printf("Guncellenecek kitabin bilgileri -> ISBN: %s\tKitap Adi: %s\n", temp->ISBN, temp->kitapAdi);
+            printf("1- Kitap Adi Guncelle\n2- Menuden Cik\nSecim: ");
             scanf("%d", &secim);
             switch (secim)
             {
-            case 1:
-                printf("Yeni kitap adi giriniz: ");
-                scanf(" %[^\n]%*c", yeniKitapAdi);
-                strcpy(temp->kitapAdi, yeniKitapAdi);
-                return kitaplar;
-            case 2:
-                printf("Yeni kitap ISBN numarasi giriniz: ");
-                scanf (" %[^\n]%*c", yeniKitapISBN);
-                strcpy(temp->ISBN, yeniKitapISBN);
-                // temp->head = kitapOrnekleriniGuncelle(temp->head, yeniKitapISBN);
-                return kitaplar;
-            default:
-                printf("Girmis oldugunuz islemi kontrol ediniz.\n");
-                return kitaplar;
+                case 1:
+                    printf("Yeni kitap adi giriniz: ");
+                    scanf(" %[^\n]%*c", yeniKitapAdi);
+                    strcpy(temp->kitapAdi, yeniKitapAdi);
+                    return kitaplar;
+
+                case 2:
+                    printf("Menuden cikiliyor.\n");
+                    return kitaplar;
+
+                default:
+                    printf("Girmis oldugunuz islemi kontrol ediniz.\n");
+                    return kitaplar;
             }
         }
         temp = temp->next;
@@ -593,13 +591,14 @@ struct Kitap* kitapBilgileriGuncelle(struct Kitap* kitaplar) {
 
 /* ödünç almış olduğu kitabı teslim etmeyen öğrencilerin ID'lerini görüntüler */
 void kitapTeslimEtmeyenOgrencileriListele(struct KitapOdunc* kitapOduncler) {
+    struct KitapOdunc *tempKitapOdunc = kitapOduncler;
     printf("Kitap teslim etmemis ogrencilerin listesi: \n");
-    while(kitapOduncler != NULL) {
-        if(kitapOduncler->islemTipi == 0) {
-            printf("Ogrenci ID: %s\tAlinma Tarihi: ", kitapOduncler->ogrID);
-            tarihBilgisiGoruntule(kitapOduncler->islemTarihi);
+    while(tempKitapOdunc != NULL) {
+        if(tempKitapOdunc->islemTipi == 0) {
+            printf("Ogrenci ID: %s\tAlinma Tarihi: ", tempKitapOdunc->ogrID);
+            tarihBilgisiGoruntule(tempKitapOdunc->islemTarihi);
         }
-        kitapOduncler = kitapOduncler->next;
+        tempKitapOdunc = tempKitapOdunc->next;
     }
 }
 
@@ -608,14 +607,13 @@ struct Yazar* yazarBilgileriGuncelle(struct Yazar* yazarlar) {
     int guncellenecekYazarID;
     char yeniYazarAdi[31];
     char yeniYazarSoyadi[31];
-
     int secim;
     printf("Guncelleme yapmak istediginiz yazarin ID numarasini giriniz: ");
     scanf("%d", &guncellenecekYazarID);
     while(temp != NULL) {
         if(temp->yazarID == guncellenecekYazarID) {
             printf("Yazar adi: %s\t Soyadi: %s\n", temp->yazarAd, temp->yazarSoyad);
-            printf("1- Yazarin adini soyadini guncelle\n2- Iptal et\nSecim: ");
+            printf("1- Yazarin adini soyadini guncelle\n2- Menuden Cik\nSecim: ");
             scanf("%d", &secim);
             switch (secim)
             {
@@ -627,9 +625,11 @@ struct Yazar* yazarBilgileriGuncelle(struct Yazar* yazarlar) {
                 scanf (" %[^\n]%*c", yeniYazarSoyadi);
                 strcpy(temp->yazarSoyad, yeniYazarSoyadi);
                 return yazarlar;
+
             case 2:
-                printf("Iptal ediliyor.\n");
+                printf("Menuden Cikiliyor.\n");
                 return yazarlar;
+
             default:
                 printf("Girmis oldugunuz islemi kontrol ediniz.\n");
                 return yazarlar;
@@ -654,7 +654,7 @@ struct Ogrenci* ogrenciBilgileriniGuncelle(struct Ogrenci* ogrenciler) {
     while(temp != NULL) {
         if(strcmp(temp->ogrID, guncellenecekOgrenciID)) {
             printf("Ogrencinin adi: %s\t Soyadi: %s\n", temp->ad, temp->soyad);
-            printf("1- Ogrencinin adini soyadini guncelle\n2- Iptal et\nSecim: ");
+            printf("1- Ogrencinin adini soyadini guncelle\n2- Menuden Cik\nSecim: ");
             scanf("%d", &secim);
             switch (secim)
             {
@@ -666,9 +666,11 @@ struct Ogrenci* ogrenciBilgileriniGuncelle(struct Ogrenci* ogrenciler) {
                 scanf (" %[^\n]%*c", yeniOgrenciSoyadi);
                 strcpy(temp->soyad, yeniOgrenciSoyadi);
                 return ogrenciler;
+
             case 2:
                 printf("Iptal ediliyor.\n");
                 return ogrenciler;
+
             default:
                 printf("Girmis oldugunuz islemi kontrol ediniz.\n");
                 return ogrenciler;
@@ -682,25 +684,26 @@ struct Ogrenci* ogrenciBilgileriniGuncelle(struct Ogrenci* ogrenciler) {
 
 /* almış olduğu kitabın bilgisini ve örneklerini görüntüler */
 void kitapBilgileriGoruntule(struct Kitap* kitap) {
+    struct KitapOrnek *tempKitapOrnek = kitap->head;
     printf("Kitap adi: %s\tKitap ISBN: %s\t Kitap adedi: %d\n", kitap->kitapAdi, kitap->ISBN, kitap->adet);
-    while(kitap->head != NULL) {
-        printf("Etiket no: %s\tDurum: %s\n", kitap->head->EtiketNo, kitap->head->Durum);
-        kitap->head = kitap->head->next;
+    while(tempKitapOrnek != NULL) {
+        printf("Etiket no: %s\tDurum: %s\n", tempKitapOrnek->EtiketNo, tempKitapOrnek->Durum);
+        tempKitapOrnek = tempKitapOrnek->next;
     }
 }
 
 /* kullanıcıdan alacağı kitap adıyla kitabı kitapBilgileriGoruntule fonksiyonuna gönderir */
 void kitapBilgileriniListele(struct Kitap* kitaplar) {
     char aranacakKitapAdi[30];
-
+    struct Kitap* tempKitaplar = kitaplar;
     printf("Bilgilerini goruntulemek istediginiz kitabin adini giriniz: ");
     scanf(" %[^\n]%*c", aranacakKitapAdi);
-    while(kitaplar != NULL) {
-        if(strcmp(kitaplar->kitapAdi, aranacakKitapAdi) == 0) {
-            kitapBilgileriGoruntule(kitaplar);
+    while(tempKitaplar != NULL) {
+        if(strcmp(tempKitaplar->kitapAdi, aranacakKitapAdi) == 0) {
+            kitapBilgileriGoruntule(tempKitaplar);
             return;
         }
-        kitaplar = kitaplar->next;
+        tempKitaplar = tempKitaplar->next;
     }
 }
 
@@ -709,7 +712,7 @@ void yazarBilgileriniGoruntule(struct Yazar* yazar, struct Kitap* kitaplar, stru
     printf("%d. Yazar adi ve soyadi: %s %s\n", yazar->yazarID, yazar->yazarAd, yazar->yazarSoyad);
     int i;
     struct Kitap* tempKitaplar;
-    for(int i = 0; i < numberOfKitapYazarlar; i++) {
+    for(int i = 0; i < numberOfKitapYazarlar - 1; i++) {
         tempKitaplar = kitaplar;
         if(kitapYazarlar[i].YazarID == yazar->yazarID) {
             while(tempKitaplar != NULL) {
@@ -725,13 +728,14 @@ void yazarBilgileriniGoruntule(struct Yazar* yazar, struct Kitap* kitaplar, stru
 /* kullanıcıdan yazarın adını alarak varsa yazarın bilgilerini görüntüleyecek fonksiyona yazarı gönderir */
 void yazarBilgileriniListele(struct Yazar* yazarlar, struct Kitap* kitaplar, struct KitapYazar kitapYazarlar[], int numberOfKitapYazarlar) {
     char aranacakYazarAdi[30];
+    struct Yazar *tempYazarlar = yazarlar;
     printf("Bilgilerini goruntulemek istediginiz yazarin adini giriniz: ");
     scanf(" %[^\n]%*c", aranacakYazarAdi);
-    while(yazarlar != NULL) {
-        if(strcmp(yazarlar->yazarAd, aranacakYazarAdi) == 0) {
-            yazarBilgileriniGoruntule(yazarlar, kitaplar, kitapYazarlar, numberOfKitapYazarlar);
+    while(tempYazarlar != NULL) {
+        if(strcmp(tempYazarlar->yazarAd, aranacakYazarAdi) == 0) {
+            yazarBilgileriniGoruntule(tempYazarlar, kitaplar, kitapYazarlar, numberOfKitapYazarlar);
         }
-        yazarlar = yazarlar->next;
+        tempYazarlar = tempYazarlar->next;
     }
 }
 
@@ -744,31 +748,31 @@ void degisiklikleriDosyalaraKaydet(
     struct Tarih *tarihler,
     struct KitapOdunc *kitapOduncler) {
         FILE *filePtr;
-        filePtr = fopen("Ogrenciler1.csv", "w");
+        filePtr = fopen("Ogrenciler.csv", "w");
         while(ogrenciler != NULL) {
             fprintf(filePtr, "%s,%s,%s,%d\n", ogrenciler->ogrID, ogrenciler->ad, ogrenciler->soyad, ogrenciler->puan);
             ogrenciler = ogrenciler->next;
         }
         fclose(filePtr);
-        filePtr = fopen("Yazarlar1.csv", "w");
+        filePtr = fopen("Yazarlar.csv", "w");
         while(yazarlar != NULL) {
             fprintf(filePtr, "%d,%s,%s\n", yazarlar->yazarID, yazarlar->yazarAd, yazarlar->yazarSoyad);
             yazarlar = yazarlar->next;
         }
         fclose(filePtr);
-        filePtr = fopen("Kitaplar1.csv", "w");
+        filePtr = fopen("Kitaplar.csv", "w");
         while(kitaplar != NULL) {
             fprintf(filePtr, "%s,%s,%d\n", kitaplar->kitapAdi, kitaplar->ISBN, kitaplar->adet);
             kitaplar = kitaplar->next;
         }
         fclose(filePtr);
-        filePtr = fopen("KitapYazar1.csv", "w");
+        filePtr = fopen("KitapYazar.csv", "w");
         int i;
-        for(i = 0; i < numberOfLines; i++) {
+        for(i = 0; i < numberOfLines-1; i++) {
             fprintf(filePtr, "%s,%d\n", kitapYazarlar[i].ISBN, kitapYazarlar[i].YazarID);
         }
         fclose(filePtr);
-        filePtr = fopen("KitapOdunc1.csv", "w");
+        filePtr = fopen("KitapOdunc.csv", "w");
         while(kitapOduncler != NULL) {
             fprintf(filePtr, "%s,%s,%d,%d.%d.%d.%d\n", kitapOduncler->EtiketNo, kitapOduncler->ogrID, kitapOduncler->islemTipi, kitapOduncler->islemTarihi.gun, kitapOduncler->islemTarihi.ay, 20, kitapOduncler->islemTarihi.yil);
             kitapOduncler = kitapOduncler->next;
@@ -776,7 +780,7 @@ void degisiklikleriDosyalaraKaydet(
         fclose(filePtr);
 }
 
-void kitapOduncAl(struct Ogrenci *ogrenciler, struct Kitap* kitaplar, struct KitapOdunc *kitapOduncler) {
+struct KitapOdunc* kitapOduncAl(struct Ogrenci *ogrenciler, struct Kitap* kitaplar, struct KitapOdunc *kitapOduncler) {
     char oduncAlinacakKitapISBN[14];
     char ogrenciID[9];
     // char oduncAlinacakKitapISBN[] = "1234567891011";
@@ -790,7 +794,7 @@ void kitapOduncAl(struct Ogrenci *ogrenciler, struct Kitap* kitaplar, struct Kit
             ogrenciBulunduMu = 1;
             if(tempOgrenciler->puan < 0) {
                 printf("Ogrencinin yeterli puani bulunmadigindan kitap almasi mumkun degildir.\n");
-                return;
+                return kitapOduncler;
             }
             break;
         }
@@ -806,10 +810,11 @@ void kitapOduncAl(struct Ogrenci *ogrenciler, struct Kitap* kitaplar, struct Kit
             while(kitapOrnekleri != NULL) {
                 if(strcmp(kitapOrnekleri->Durum, "RAFTA") == 0) {
                     strcpy(kitapOrnekleri->Durum, tempOgrenciler->ogrID);
+                    printf("Kitap durumu : %s\n", kitapOrnekleri->Durum);
                     char tarih[] = "25.11.2022";
-                    kitapOduncEkle(kitapOduncler, kitapOrnekleri->EtiketNo, tempOgrenciler->ogrID, 0, tarih);
+                    kitapOduncler = kitapOduncEkle(kitapOduncler, kitapOrnekleri->EtiketNo, tempOgrenciler->ogrID, 0, tarih);
                     printf("Kitap basariyla odunc alinmistir.\n");
-                    return;
+                    return kitapOduncler;
                 }
                 kitapOrnekleri = kitapOrnekleri->next;
             }
@@ -953,45 +958,137 @@ void zamanindaTeslimEdilmeyenKitaplariListele(struct Kitap *kitaplar, struct Kit
     }
 }
 
+void kitapYazarEslestir(struct Kitap *kitaplar, struct Yazar *yazarlar, struct KitapYazar *kitapYazarlar, int numberOfLines) {
+    struct Kitap *tempKitaplar = kitaplar;
+    struct Yazar *tempYazarlar = yazarlar;
+    struct KitapYazar *tempKitapYazarlar = kitapYazarlar;
+    char yazarAdi[30];
+    int yazarID;
+    char kitapAdi[30];
+    char kitapISBN[30];
+    printf("Kitap-Yazar eslestirmesi yapmak istediginiz yazarin adini giriniz: ");
+    scanf (" %[^\n]%*c", yazarAdi);
+    while(tempYazarlar != NULL) {
+        if(strcmp(tempYazarlar->yazarAd, yazarAdi) == 0) {
+            printf("ID: %d\t Yazar Adi: %s\tYazar Soyadi: %s\n", tempYazarlar->yazarID, tempYazarlar->yazarAd, tempYazarlar->yazarSoyad);
+        }
+        tempYazarlar = tempYazarlar->next;
+    }
+    tempYazarlar = yazarlar;
+    printf("Listelenen yazarin ID numarasini giriniz: ");
+    scanf("%d", &yazarID);
+    int yazarVarMi = 0;
+    while(tempYazarlar != NULL) {
+        if(tempYazarlar->yazarID == yazarID) yazarVarMi = 1;
+        tempYazarlar = tempYazarlar->next;
+    }
+    if(yazarVarMi == 0) {
+        printf("Yazar sistemde bulunamamistir.\n");
+        return;
+    }
+    printf("Kitap-Yazar eslestirmesi yapilacak kitabin adini giriniz: ");
+    scanf (" %[^\n]%*c", kitapAdi);
+    while(tempKitaplar != NULL) {
+        if(strcmp(tempKitaplar->kitapAdi, kitapAdi) == 0) {
+            printf("ISBN: %s\tKitap Adi: %s\n", tempKitaplar->ISBN, tempKitaplar->kitapAdi);
+        }
+        tempKitaplar = tempKitaplar->next;
+    }
+    tempKitaplar = kitaplar;
+    printf("Listelenen kitabin ISBN numarasini giriniz: ");
+    scanf ("%[^\n]%*c", kitapISBN);
+    FILE *filePtr;
+    filePtr = fopen("KitapYazar.csv", "w");
+    int i;
+    for(i = 0; i < numberOfLines-1; i++) {
+        fprintf(filePtr, "%s,%d\n", kitapYazarlar[i].ISBN, kitapYazarlar[i].YazarID);
+    }
+    fprintf(filePtr, "%s,%d\n", kitapISBN, yazarID);
+    fclose(filePtr);
+}
+
+void kitabinYazariniGuncelle(struct Kitap *kitaplar, struct Yazar *yazarlar, struct KitapYazar *kitapYazarlar, int numberOfLines) {
+    struct Kitap *tempKitaplar = kitaplar;
+    struct Yazar *tempYazarlar = yazarlar;
+    struct KitapYazar *tempKitapYazarlar = kitapYazarlar;
+    char kitapISBN[14];
+    int yazarID;
+    printf("Yazarini guncellemek istediginiz kitabin ISBN numarasini giriniz: ");
+    scanf (" %[^\n]%*c", kitapISBN);
+    int kitapVarMi = 0;
+    while(tempKitaplar != NULL) {
+        if(strcmp(tempKitaplar->ISBN, kitapISBN) == 0) { kitapVarMi = 1; }
+        tempKitaplar = tempKitaplar->next;
+    }
+    if(kitapVarMi == 0) {
+        printf("Kitap sistemde bulunamamistir.\n");
+        return;
+    }
+    int index, baslikYaz = 0;
+    for(index = 0; index < numberOfLines - 1; index++) {
+        if(strcmp(kitapYazarlar[index].ISBN, kitapISBN) == 0) {
+            if(baslikYaz == 0) { printf("Kitabin yazarlari:\n"); baslikYaz = 1; }
+            printf("Kitap ISBN: %s\tKitap Yazari: %d\n", kitapYazarlar[index].ISBN, kitapYazarlar[index].YazarID);
+        }
+    }
+    if(baslikYaz == 0) {
+        printf("Kitabin yazar bilgileri daha once sisteme girilmemis. Lutfen once kitaba yazar ekleyin.\n");
+        return;
+    }
+    int eskiYazarId, yeniYazarID, yazarVarMi = 0;
+    printf("Guncellemek istediginiz yazarin ID numarasini giriniz: ");
+    scanf("%d", &eskiYazarId);
+    printf("Yeni yazarin ID numarasini giriniz: ");
+    scanf("%d", &yeniYazarID);
+    while(tempYazarlar != NULL) {
+        if(tempYazarlar->yazarID == yeniYazarID) { yazarVarMi = 1; break; }
+        tempYazarlar = tempYazarlar->next;
+    }
+    if(yazarVarMi == 0) {
+        printf("Guncellenecek yeni yazarin ID numarasi bulunamamistir.\n");
+        return;
+    }
+    for(index = 0; index < numberOfLines; index++) {
+        if(kitapYazarlar[index].YazarID == eskiYazarId) {
+            kitapYazarlar[index].YazarID = yeniYazarID;
+            FILE *filePtr;
+            filePtr = fopen("KitapYazar.csv", "w");
+            int i;
+            printf("number of lines: %d\n", numberOfLines);
+            for(i = 0; i < numberOfLines-1; i++) {
+                fprintf(filePtr, "%s,%d\n", kitapYazarlar[i].ISBN, kitapYazarlar[i].YazarID);
+            }
+            fclose(filePtr);
+            return;
+        }
+    }
+    printf("Guncellenecek eski yazarin ID numarasi bulunamamistir.\n");
+}
+
 int main() {
+    struct KitapOdunc *KitapOduncler = NULL;
+
     struct Ogrenci *Ogrenciler = NULL;
     struct Yazar *Yazarlar = NULL;
     struct KitapOrnek *KitapOrnekler = NULL;
     struct Kitap *Kitaplar = NULL;
-    const int numberOfLines = getNumberOfLineFromCSV();
-    struct KitapYazar KitapYazarlar[numberOfLines];
-    int i;
-    for(i = 0; i < numberOfLines; i++) {
-        KitapYazarlar[i] = dosyadanKitapYazarEkle(i);
-    }
+    
     struct Tarih *Tarihler = NULL;
-    struct KitapOdunc *KitapOduncler = NULL;
+    
     Ogrenciler = dosyadanOgrenciEkle(Ogrenciler);
     Yazarlar = dosyadanYazarEkle(Yazarlar);
     Kitaplar = dosyadanKitapEkle(Kitaplar);
-    KitapOduncler = dosyadanKitapOduncEkle(KitapOduncler);
-    // printf("%s %s %d\n", KitapOduncler->EtiketNo, KitapOduncler->ogrID, KitapOduncler->islemTipi);
-    // ogrencileriListele(Ogrenciler);
-    // yazarlariListele(Yazarlar);
-    // kitaplariListele(Kitaplar);
-    // Ogrenciler = ogrenciSil(Ogrenciler);
-    // ogrencileriListele(Ogrenciler);
-    // Kitaplar = kitapSil(Kitaplar);
-    // kitaplariListele(Kitaplar);
-    // Yazarlar = yazarSil(Yazarlar);
-    // yazarlariListele(Yazarlar);
-    // ogrenciBilgisiGoruntule(Ogrenciler, KitapOduncler);
-    // raftakiKitaplariListele(Kitaplar);
-    // Kitaplar = kitapBilgileriGuncelle(Kitaplar);
-    // kitaplariListele(Kitaplar);
-    // kitapTeslimEtmeyenOgrencileriListele(KitapOduncler);
-    // Yazarlar = yazarBilgileriGuncelle(Yazarlar);
-    // yazarlariListele(Yazarlar);
-    // kitapBilgileriniListele(Kitaplar);
-    // yazarBilgileriniListele(Yazarlar, Kitaplar, KitapYazarlar, numberOfLines);
-    // degisiklikleriDosyalaraKaydet(Ogrenciler, Yazarlar, KitapOrnekler, Kitaplar, KitapYazarlar, numberOfLines, Tarihler, KitapOduncler);
+    // KitapOduncler = dosyadanKitapOduncEkle(KitapOduncler);
+
     int menuSecimi = 0, icMenuSecimi = 0;
     while(menuSecimi != 4) {
+        int numberOfLines = getNumberOfLineFromCSV();
+        struct KitapYazar KitapYazarlar[numberOfLines];
+        int i;
+        for(i = 0; i < numberOfLines; i++) {
+            KitapYazarlar[i] = dosyadanKitapYazarEkle(i);
+        }
+
         icMenuSecimi = 0;
         printf("\n1- Ogrenci Islemleri\n");
         printf("2- Kitap Islemleri\n");
@@ -1041,7 +1138,7 @@ int main() {
                             ogrencileriListele(Ogrenciler);
                             break;
                         case 8:
-                            kitapOduncAl(Ogrenciler, Kitaplar, KitapOduncler);
+                            KitapOduncler = kitapOduncAl(Ogrenciler, Kitaplar, KitapOduncler);
                             break;
                         case 9:
                             kitapTeslimEt(Ogrenciler, Kitaplar, KitapOduncler);
@@ -1053,6 +1150,7 @@ int main() {
                             printf("Hatali islem yaptiniz. Lutfen tekrar deneyin.\n");
                             break;
                     }
+                    break;
                 }
                 break;
             
@@ -1080,7 +1178,7 @@ int main() {
                             Kitaplar = kitapSil(Kitaplar);
                             break;
                         case 3:
-                            Kitaplar = kitapBilgileriGuncelle(Kitaplar);
+                            Kitaplar = kitapBilgileriGuncelle(Kitaplar, KitapYazarlar, numberOfLines);
                             break;
                         case 4:
                             kitapBilgileriniListele(Kitaplar);
@@ -1092,7 +1190,11 @@ int main() {
                             zamanindaTeslimEdilmeyenKitaplariListele(Kitaplar, KitapOduncler);
                             break;
                         case 7:
+                            kitapYazarEslestir(Kitaplar, Yazarlar, KitapYazarlar, numberOfLines);
+                            break;
                         case 8:
+                            kitabinYazariniGuncelle(Kitaplar, Yazarlar, KitapYazarlar, numberOfLines);
+                            break;
                         case 9:
                             printf("Ana menuye donuluyor.\n");
                             break;
@@ -1101,6 +1203,7 @@ int main() {
                             printf("Hatali islem yaptiniz. Lutfen tekrar deneyin.\n");
                             break;
                     }
+                    break;
                 }
                 break;
             
@@ -1137,15 +1240,22 @@ int main() {
                             printf("Hatali islem yaptiniz. Lutfen tekrar deneyin.\n");
                             break;
                     }
+                    break;
                 }
                 break;
+
+            /* çıkış */
             case 4:
                 printf("Cikis yapiliyor.\n");
+                degisiklikleriDosyalaraKaydet(Ogrenciler, Yazarlar, KitapOrnekler, Kitaplar, KitapYazarlar, numberOfLines, Tarihler, KitapOduncler);
                 return 0;
+
+            /* hatalı giriş */
             default:
                 printf("Hatali islem yaptiniz. Lutfen tekrar deneyin.\n");
-                continue;
+                break;
         }
     }
+
     return 0;
 }
