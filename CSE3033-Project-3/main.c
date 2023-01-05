@@ -8,13 +8,17 @@
 
 #define LINE_LENGTH 1024
 
+/* this values are taken from argc argv */
 int NUMBER_OF_READ_THREADS;
 int NUMBER_OF_UPPER_THREADS;
 int NUMBER_OF_REPLACE_THREADS;
 int NUMBER_OF_WRITE_THREADS;
 char* fileName;
+
+/* creating a mutex*/
 pthread_mutex_t mutex;
 
+/* this struct is for identifying a thread with int value */
 typedef struct thread_data {
     int thread_id;
 } thread_data;
@@ -22,202 +26,349 @@ typedef struct thread_data {
 typedef struct line {
     char lineString[LINE_LENGTH];
     int lineNumber;
-    int isLineUppered;
-    int isLineReplaced;
+    int isLineUpperingOrReplacing;
 } lines;
 
+/* this pointer holds the data of lines */
 lines* textLines;
 
+/* this variable holds the size of 'textLines' */
 int sizeOfLines = 0;
 
+/* this function unlocks all the lines for threads to use lines */
 void unlockAllLines() {
     for(int i = 0; i < sizeOfLines; i++) {
-        textLines[i].isLineReplaced = 0;
-        textLines[i].isLineUppered = 0;
-        printf("Line %d has unlocked\n", i);
+        textLines[i].isLineUpperingOrReplacing = 0;
     }
 }
 
+/*
+addNewLine function takes 2 parameters which are newLine and lineNumber.
+this line is added to 'textLines'.
+*/
 void addNewLine(char newLine[], int lineNumber) {
+    /* if there is no line added before */
     if(sizeOfLines == 0) {
-        textLines = (lines*) malloc(lineNumber * sizeof(lines));
-        textLines[lineNumber-1].lineNumber = lineNumber;
-        strcpy(textLines[lineNumber-1].lineString, newLine);
-        sizeOfLines = lineNumber;
+        /* creating a new pointer and allocatin a memory place with malloc */
+        lines* newTextLines = (lines*) malloc((lineNumber + 1) * sizeof(lines));
+        newTextLines[lineNumber].lineNumber = lineNumber;
+        strcpy(newTextLines[lineNumber].lineString, newLine);
+        textLines = newTextLines;
+        /* changing the size of 'textLines' */
+        sizeOfLines = lineNumber + 1;
         return;
     }
-    if(lineNumber > sizeOfLines) {
-        sizeOfLines = lineNumber;
-        textLines = realloc(textLines, (lineNumber) * sizeof(lines));
-        textLines[lineNumber-1].lineNumber = lineNumber;
-        strcpy(textLines[lineNumber-1].lineString, newLine);
+    /*
+    if the new line's linenumber is greater or equal to size of current 'textLines',
+    that means we need to allocate more memory place for the pointer, because we cannot
+    store the line 6 to pointer that has 4 place in memory. because the values are assigned
+    to indexes of textLines according to their linenumber.
+    */
+    if(lineNumber >= sizeOfLines) {
+        lines* newTextLines = (lines*) malloc((lineNumber + 1) * sizeof(lines));
+        for(int i = 0; i < sizeOfLines; i++) {
+            newTextLines[i].lineNumber = textLines[i].lineNumber;
+            strcpy(newTextLines[i].lineString, textLines[i].lineString);
+        }
+        newTextLines[lineNumber].lineNumber = lineNumber;
+        strcpy(newTextLines[lineNumber].lineString, newLine);
+        textLines = newTextLines;
+        sizeOfLines = lineNumber + 1;
         return;
     }
-    textLines[lineNumber-1].lineNumber = lineNumber;
-    strcpy(textLines[lineNumber-1].lineString, newLine);
+    /*
+    new line's linenumber is smaller than current size, so there is no need to allocate new memory place,
+    new line can be stored directly to its index.
+    */
+    textLines[lineNumber].lineNumber = lineNumber;
+    strcpy(textLines[lineNumber].lineString, newLine);
 }
 
-void* read_thread(void* threadType) {
+/* this is the function for read threads */
+void* readThread(void* threadType) {
     thread_data* read_thread_data = (thread_data*) threadType;
     int thread_id = read_thread_data->thread_id;
     
+    /* opening the input file */
     FILE* textFile = fopen(fileName, "r");
+    /* if the file does not exist */
     if(textFile == NULL) {
         perror("Error while opening text file");
         exit(1);
     }
 
+    /* initializing new variables for a line */
     char readLine[LINE_LENGTH];
     int lineNumber = 0;
 
     while(fgets(readLine, LINE_LENGTH, textFile) != NULL) {
+        /* using % operator for assigning a line to a thread */
         if(lineNumber % NUMBER_OF_READ_THREADS == thread_id) {
+            /* mutex is locked */
             pthread_mutex_lock(&mutex);
             // deleting new line character ('\n') from the line 
             for(int i = 0; i < LINE_LENGTH; i++) {
                 if(readLine[i] == '\n') readLine[i] = '\0';
             }
-            printf("Thread ID: %d\tLine: %s\n", thread_id, readLine);
+            printf("Read_%d\t\t\tRead_%d read the line %d which is '%s'\n", thread_id, thread_id, lineNumber, readLine);
+            /* passing data of line to add it to textLine pointer */
             addNewLine(readLine, lineNumber);
+            /* mutex is unlocked */
             pthread_mutex_unlock(&mutex);
         }
+        /* incrementing the number of current line according to % operator and id of thread */
         lineNumber++;
-    }
-
-    //printf("Thread ID: %d\n", thread_id);    
+    }  
+    /* closing the opened input file */
     fclose(textFile);
+    /* terminating the current thread */
     pthread_exit(NULL);
 }
 
-void* upper_thread(void* threadType) {
+/* this is the function for upper threads */
+void* upperThread(void* threadType) {
     thread_data* upper_thread_data = (thread_data*) threadType;
     int thread_id = upper_thread_data->thread_id;
 
     int readLineNumber = 0;
     for(int i = 0; i < sizeOfLines; i++) {
         if(readLineNumber % NUMBER_OF_UPPER_THREADS == thread_id) {
+            /* with while loop, if replace thread is working on this line, it waits until replace thread is done with its job */
+            while(textLines[readLineNumber].isLineUpperingOrReplacing == 1);
+            /* locking the current line, so it can be modified by only this thread */
+            textLines[readLineNumber].isLineUpperingOrReplacing = 1;
+            /* locking the mutex */
             pthread_mutex_lock(&mutex);    
-            printf("Upper thread_id: %d\tLine which is gonna be uppered is: %d\n", thread_id, readLineNumber);
-            printf("Line: %s\n", textLines[readLineNumber].lineString);
+            printf("Upper_%d\t\t\tUpper_%d read index %d and converted '%s' to\n", thread_id, thread_id, readLineNumber, textLines[readLineNumber].lineString);
+            /* converting lowercase letters to uppercase letters */
             for(int j = 0; j < LINE_LENGTH; j++) {
                 textLines[readLineNumber].lineString[j] = toupper(textLines[readLineNumber].lineString[j]);
             }
-            printf("Line: %s\n\n", textLines[readLineNumber].lineString);
+            printf("\t\t\t\t'%s'\n", textLines[readLineNumber].lineString);
+            /* unlocking the current line, so it can be modified by only this thread */
+            textLines[readLineNumber].isLineUpperingOrReplacing = 0;
+            /* unlocking the mutex */
             pthread_mutex_unlock(&mutex);
         }
         readLineNumber++;
     }
-    
+    /* terminating the current thread */
     pthread_exit(NULL);
 }
 
-void* replace_thread(void* threadType) {
+/* this is the function for replace threads */
+void* replaceThread(void* threadType) {
     thread_data* data = (thread_data*) threadType;
     int thread_id = data->thread_id;
 
     int readLineNumber = 0;
     for(int i = 0; i < sizeOfLines; i++) {
         if(readLineNumber % NUMBER_OF_REPLACE_THREADS == thread_id) {
+            while(textLines[readLineNumber].isLineUpperingOrReplacing == 1);
+            /* locking the current line, so upper thread cannot access it */
+            textLines[readLineNumber].isLineUpperingOrReplacing = 1;
+            /* mutex is unlocked */
             pthread_mutex_lock(&mutex);
-            printf("Replace thread_id: %d\tLine which is gonna be replaced is: %d\n", thread_id, readLineNumber);
-            printf("Line: %s\n", textLines[readLineNumber].lineString);
+            printf("Replace_%d\t\tReplace_%d read index %d and converted '%s' to\n", thread_id, thread_id, readLineNumber, textLines[readLineNumber].lineString);
+            /* changing the space characters to underscore character in the current line */
             for(int j = 0; j < LINE_LENGTH; j++) {
                 if(textLines[readLineNumber].lineString[j] == ' ') { textLines[readLineNumber].lineString[j] = '_'; }
             }
-            printf("Line: %s\n\n", textLines[readLineNumber].lineString);
+            printf("\t\t\t\t'%s'\n", textLines[readLineNumber].lineString);
+            /* unlocking the line so upper thread can also use it */
+            textLines[readLineNumber].isLineUpperingOrReplacing = 0;
+            /* mutex is unlocked */
             pthread_mutex_unlock(&mutex);
+        }
+        readLineNumber++;
+    }
+    /* terminating the current thread */
+    pthread_exit(NULL);
+}
+
+/* changing the line with modified line */
+void changeLineInFile(char line[], int indexOfLine) {
+    char lineToChange[LINE_LENGTH];
+    int currentLine = 0;
+    FILE* textFile = fopen("output.txt", "r+");
+
+    /* adding a '\n' character to end of the line*/
+    for(int i = 0; i < LINE_LENGTH; i++) {
+        if(line[i] == '\0') {
+            line[i] = '\n';
+            line[i+1] = '\0';
+            break;
         }
     }
 
+    /* if the given line is the first line */
+    if(indexOfLine == 0) {
+        fputs(line,textFile);
+        return;
+    }
+
+    /* updating the old line with modified line */
+    while(fgets(lineToChange, LINE_LENGTH, textFile) != NULL) {
+        currentLine++;
+        if(currentLine == indexOfLine) {
+            fputs(line, textFile);
+            break;
+        }
+    }
+    /* closing the file */
+    fclose(textFile);
 }
 
-void printLines() {
-    for(int i = 0; i < sizeOfLines; i++) {
-        textLines[i].isLineReplaced = 0;
-        textLines[i].isLineUppered = 0;
-        printf("Line: %d\t Replace and Upper states: %d %d\tLine: %s\n", textLines[i].lineNumber, textLines[i].isLineReplaced, textLines[i].isLineUppered, textLines[i].lineString);
-        
+/* this is the function for write threads */
+void* writeThread(void* threadType) {
+    thread_data* data = (thread_data*) threadType;
+    int thread_id = data->thread_id;
+
+    /* opening the file to modify */
+    FILE* textFile = fopen("output.txt", "r+");
+    /* if file does not happen, file has to be created firstly */
+    if(textFile == NULL) {
+        textFile = fopen("output.txt", "r+");
     }
+    fclose(textFile);
+
+    int lineNumber = 0;
+    for(int i = 0; i < sizeOfLines; i++) {
+        /* assigning a line to current thread */
+        if(lineNumber % NUMBER_OF_WRITE_THREADS == thread_id) {
+            /* locking mutex */
+            pthread_mutex_lock(&mutex);
+            printf("Write_%d\t\t\tWrite_%d write line %d back which is '%s'\n", thread_id, thread_id, lineNumber, textLines[lineNumber].lineString);
+            /* passing values to function */
+            changeLineInFile(textLines[lineNumber].lineString, lineNumber);
+            /* unlocking mutex */
+            pthread_mutex_unlock(&mutex);
+        }
+        lineNumber++;
+    }
+    /* terminating current write thread */
+    pthread_exit(NULL);
 }
 
 int main(int argc, char* argv[]) {
-    if(argc != 5) {
-        printf("Usage: %s <fileName> readThreadNumber upperThreadNumber replaceThreadNumber\n", argv[0]);
+    /* if given argument number is not 6, the program is going to be terminated */
+    if(argc != 6) {
+        printf("Usage: %s <fileName> <numberOfReadThreads> <numberOfUpperThreads> <numberOfReplaceThreads> <numberOfWriteThreads>\n", argv[0]);
         exit(1);
     }
 
+    /* initializing a mutex */
     pthread_mutex_init(&mutex, NULL);
 
+    /* assigning arguments given for main */
     fileName = argv[1];
     NUMBER_OF_READ_THREADS = atoi(argv[2]);
     NUMBER_OF_UPPER_THREADS = atoi(argv[3]);
     NUMBER_OF_REPLACE_THREADS = atoi(argv[4]);
+    NUMBER_OF_WRITE_THREADS = atoi(argv[5]);
 
+    /* creating thread id read threads */
     pthread_t readThreads[NUMBER_OF_READ_THREADS];
     thread_data readThreadsData[NUMBER_OF_READ_THREADS];
-
+    /* creating thread id upper threads */
     pthread_t upperThreads[NUMBER_OF_UPPER_THREADS];
     thread_data upperThreadsData[NUMBER_OF_UPPER_THREADS];
-
+    /* creating thread id replace threads */
     pthread_t replaceThreads[NUMBER_OF_REPLACE_THREADS];
     thread_data replaceThreadsData[NUMBER_OF_REPLACE_THREADS];
+    /* creating thread id write threads */
+    pthread_t writeThreads[NUMBER_OF_WRITE_THREADS];
+    thread_data writeThreadsData[NUMBER_OF_WRITE_THREADS];
 
+    printf("<Thread-type and ID>\t\t<Output>\n");
+
+    /* creating read threads */
     for(int i = 0; i < NUMBER_OF_READ_THREADS; i++) {
+        /* assigning int value from 0 to max number of threads created to identify a thread */
         readThreadsData[i].thread_id = i;
-        int isReadThreadSuccessful = pthread_create(&readThreads[i], NULL, read_thread, &readThreadsData[i]);
+        int isReadThreadSuccessful = pthread_create(&readThreads[i], NULL, readThread, &readThreadsData[i]);
+        /* if an error occurs while creating read thread */
         if(isReadThreadSuccessful != 0) {
             perror("Error while creating read thread");
             exit(1);
         }
     }
-
+    /* waiting for read threads to finish their job */
     for(int i = 0; i < NUMBER_OF_READ_THREADS; i++) {
         int isReadThreadTerminated = pthread_join(readThreads[i], NULL);
+        /* if an error occurs while terminating read thread */
         if(isReadThreadTerminated != 0) {
             perror("Error while waiting read thread");
             exit(1);
         }
     }
-
+    /*
+        when we tried to assing a value of 0 to a variable to check if line is using by upper or replace thread
+        so the thread should wait if it is using by another thread. however, we got an error. so, after reading
+        all the lines from file, we change this lock value in a function which is called unlockAllLines.
+    */
     unlockAllLines();
 
+    /* creating upper threads */
     for(int i = 0; i < NUMBER_OF_UPPER_THREADS; i++) {
+        /* assigning int value from 0 to max number of threads created to identify a thread */
         upperThreadsData[i].thread_id = i;
-        int isUpperThreadSuccessful = pthread_create(&upperThreads[i], NULL, upper_thread, &upperThreadsData[i]);
+        int isUpperThreadSuccessful = pthread_create(&upperThreads[i], NULL, upperThread, &upperThreadsData[i]);
+        /* if an error occurs while creating upper thread */
         if(isUpperThreadSuccessful != 0) {
             perror("Error while creating upper thread");
             exit(1);
         }
     }
-
+    /* creating replace threads */
     for(int i = 0; i < NUMBER_OF_REPLACE_THREADS; i++) {
+        /* assigning int value from 0 to max number of threads created to identify a thread */
         replaceThreadsData[i].thread_id = i;
-        int isReplaceThreadSuccessful = pthread_create(&replaceThreads[i], NULL, replace_thread, &replaceThreadsData[i]);
+        int isReplaceThreadSuccessful = pthread_create(&replaceThreads[i], NULL, replaceThread, &replaceThreadsData[i]);
+        /* if an error occurs while creating replace thread */
         if(isReplaceThreadSuccessful != 0) {
             perror("Error while creating replace thread");
             exit(1);
         }
     }
-
-    for(int i = 0; i < NUMBER_OF_REPLACE_THREADS; i++) {
-        int isReplaceThreadTerminated = pthread_join(replaceThreads[i], NULL);
-        if(isReplaceThreadTerminated != 0) {
-            perror("Error while waiting replace thread");
-            exit(1);
-        }
-    }
-
+    /* waiting for upper threads to finish their job */
     for(int i = 0; i < NUMBER_OF_UPPER_THREADS; i++) {
         int isUpperThreadTerminated = pthread_join(upperThreads[i], NULL);
+        /* if an error occurs while terminating upper thread */
         if(isUpperThreadTerminated != 0) {
             perror("Error while waiting upper thread");
             exit(1);
         }
     }
-
-
-
-    printLines();
-
+    /* waiting for replace threads to finish their job */
+    for(int i = 0; i < NUMBER_OF_REPLACE_THREADS; i++) {
+        int isReplaceThreadTerminated = pthread_join(replaceThreads[i], NULL);
+        /* if an error occurs while terminating replace thread */
+        if(isReplaceThreadTerminated != 0) {
+            perror("Error while waiting replace thread");
+            exit(1);
+        }
+    }
+    /* creating write threads */
+    for(int i = 0; i < NUMBER_OF_WRITE_THREADS; i++) {
+        /* assigning int value from 0 to max number of threads created to identify a thread */
+        writeThreadsData[i].thread_id = i;
+        int isWriteThreadSuccessful = pthread_create(&writeThreads[i], NULL, writeThread, &writeThreadsData[i]);
+        /* if an error occurs while creating write thread */
+        if(isWriteThreadSuccessful != 0) {
+            perror("Error while creating write thread");
+            exit(1);
+        }
+    }
+    /* waiting for write threads to finish their job */
+    for(int i = 0; i < NUMBER_OF_WRITE_THREADS; i++) {
+        int isWriteThreadTerminated = pthread_join(writeThreads[i], NULL);
+        /* if an error occurs while terminating write thread */
+        if(isWriteThreadTerminated != 0) {
+            perror("Error while waiting write thread");
+            exit(1);
+        }
+    }
+    /* killing the mutex */
     pthread_mutex_destroy(&mutex);
 }
