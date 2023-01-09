@@ -190,7 +190,7 @@ void* replaceThread(void* threadType) {
 void changeLineInFile(char line[], int indexOfLine) {
     char lineToChange[LINE_LENGTH];
     int currentLine = 0;
-    FILE* textFile = fopen("output.txt", "r+");
+    FILE* textFile = fopen(fileName, "r+");
 
     /* adding a '\n' character to end of the line*/
     for(int i = 0; i < LINE_LENGTH; i++) {
@@ -225,10 +225,10 @@ void* writeThread(void* threadType) {
     int thread_id = data->thread_id;
 
     /* opening the file to modify */
-    FILE* textFile = fopen("output.txt", "r+");
+    FILE* textFile = fopen(fileName, "r+");
     /* if file does not happen, file has to be created firstly */
     if(textFile == NULL) {
-        textFile = fopen("output.txt", "r+");
+        textFile = fopen(fileName, "r+");
     }
     fclose(textFile);
 

@@ -1,10 +1,5 @@
-The project will be done in Linux operating system using C programming language.
-You must use PThread library and synchronization appropriately in your code.
-Consider materials and examples covered in the lab sessions.
-Consider all necessary error checking for the programs.
-No late homework will be accepted!
-You must work in groups of two or three.
-The global queue must be created the first time a thread needs to use by that thread.
-Preserving consistency and preventing deadlocks are major issues to be considered.
-The user will execute the program specifying the number of threads to be created of each kind.
-You will then create the specified number of threads of each type.
+THE_PROJECT_WILL_BE_DONE_IN_LINUX_OPERATING_SYSTEM_USING_C_PROGRAMMING_LANGUAGE.
+YOU_MUST_USE_PTHREAD_LIBRARY_AND_SYNCHRONIZATION_APPROPRIATELY_IN_YOUR_CODE.
+CONSIDER_MATERIALS_AND_EXAMPLES_COVERED_IN_THE_LAB_SESSIONS.
+CONSIDER_ALL_NECESSARY_ERROR_CHECKING_FOR_THE_PROGRAMS.
+NO_LATE_HOMEWORK_WILL_BE_ACCEPTED!
