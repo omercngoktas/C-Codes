@@ -281,7 +281,7 @@ void* writeThread(void* threadType) {
             pthread_mutex_lock(&mutex);
             printf("Write_%d\t\t\tWrite_%d write line %d back which is '%s'\n", thread_id, thread_id, lineNumber, textLines[lineNumber].lineString);
             /* passing values to function */
-            changeLineInFile1(textLines[lineNumber].lineString, lineNumber);
+            changeLineInFile(textLines[lineNumber].lineString, lineNumber);
             /* unlocking mutex */
             pthread_mutex_unlock(&mutex);
         }
@@ -350,12 +350,14 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
     }
+
     /*
-        when we tried to assing a value of 0 to a variable to check if line is using by upper or replace thread
-        so the thread should wait if it is using by another thread. however, we got an error. so, after reading
-        all the lines from file, we change this lock value in a function which is called unlockAllLines.
+    when we tried to assing a value of 0 to a variable to check if line is using by upper or replace thread
+    so the thread should wait if it is using by another thread. however, we got an error. so, after reading
+    all the lines from file, we change this lock value in a function which is called unlockAllLines.
     */
     unlockAllLines();
+
     /* creating write threads */
     for(int i = 0; i < NUMBER_OF_WRITE_THREADS; i++) {
         /* assigning int value from 0 to max number of threads created to identify a thread */
